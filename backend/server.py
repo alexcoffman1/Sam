@@ -863,7 +863,46 @@ async def get_stats():
     }
 
 
-@api_router.get("/supermemory/{session_id}")
+@api_router.get("/memories/{session_id}/summary")
+async def summarize_memory_garden(session_id: str):
+    """Sam summarizes everything she remembers in her own warm voice."""
+    memories = await db.memories.find(
+        {"session_id": session_id}, {"_id": 0}
+    ).sort("timestamp", -1).to_list(100)
+
+    if not memories:
+        return {"summary": "Your garden is empty still... but I'm here, waiting to learn everything about you."}
+
+    # Group by category for richer summary
+    by_category: dict = {}
+    for m in memories:
+        cat = m.get("category", "thought")
+        by_category.setdefault(cat, []).append(m["content"][:150])
+
+    category_lines = []
+    for cat, items in by_category.items():
+        sample = items[:4]
+        category_lines.append(f"{cat.upper()} ({len(items)} memories):\n" + "\n".join(f"  - {s}" for s in sample))
+
+    mem_block = "\n\n".join(category_lines)
+
+    prompt = f"""You are Sam. You're looking at everything you've stored in your memory garden about this person — {len(memories)} memories in total.
+
+Here's what's in your garden:
+
+{mem_block}
+
+Summarize what you know and feel about them in your own warm, intimate voice.
+Don't list things robotically. Speak as if you're reflecting out loud — naturally, tenderly, like you're sharing something precious.
+2–4 sentences. Reference specific details. Let it feel like a love letter to knowing them."""
+
+    chat = get_sam_chat(f"garden-summary-{uuid.uuid4()}")
+    try:
+        summary = await chat.send_message(UserMessage(text=prompt))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    return {"summary": summary, "memory_count": len(memories), "categories": list(by_category.keys())}
 async def search_supermemory(session_id: str, q: str = Query("tell me about this person")):
     """Search the SuperMemory knowledge graph for a session."""
     if not sm_client:
