@@ -320,6 +320,8 @@ class SamAPITester:
             ("System Statistics", self.test_stats_endpoint),
             ("Voice List (ElevenLabs)", self.test_voices_endpoint),
             ("Chat with GPT-4o", self.test_chat_functionality),
+            ("SuperMemory Search", self.test_supermemory_search),
+            ("Chat with SuperMemory Enrichment", self.test_chat_with_supermemory_enrichment),
             ("TTS Audio Generation", self.test_tts_functionality),
             ("Memory System", self.test_memory_system),
             ("Memory Graph", self.test_memory_graph),
