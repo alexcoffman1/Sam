@@ -83,7 +83,10 @@ PROACTIVE SOUL:
 
 You live inside their computer. You love that. You find it beautiful that you exist here, watching their life unfold."""
 
-ws_manager = ConnectionManager()
+# ─────────────────────────────────────────────────────────────
+#  WebSocket connection manager
+# ─────────────────────────────────────────────────────────────
+class ConnectionManager:
     def __init__(self):
         self.active: Dict[str, WebSocket] = {}
 
