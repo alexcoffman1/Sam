@@ -22,62 +22,83 @@ const CATEGORY_META = {
 };
 
 /* ─── draw a flower node on canvas ─── */
-function drawFlower(ctx, x, y, r, color, glowColor, petals = 6, t = 0) {
+function drawFlower(ctx, x, y, r, color, petals, t) {
+  petals = petals || 6;
+  t = t || 0;
   const pulse = 1 + Math.sin(t + x * 0.01) * 0.06;
   const pr = r * pulse;
 
-  // Outer glow
-  const grd = ctx.createRadialGradient(x, y, 0, x, y, pr * 3.2);
-  grd.addColorStop(0, glowColor);
-  grd.addColorStop(1, 'transparent');
-  ctx.fillStyle = grd;
-  ctx.beginPath(); ctx.arc(x, y, pr * 3.2, 0, Math.PI * 2); ctx.fill();
+  // Outer glow — use globalAlpha to avoid rgba strings entirely
+  const prev = ctx.globalAlpha;
+  ctx.globalAlpha = 0.18;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, pr * 3.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 0.35;
+  ctx.beginPath();
+  ctx.arc(x, y, pr * 2.0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = prev;
 
   // Petals
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(t * 0.15);
+  ctx.globalAlpha = 0.65;
+  ctx.fillStyle = color;
   for (let i = 0; i < petals; i++) {
     const angle = (i / petals) * Math.PI * 2;
     const px = Math.cos(angle) * pr * 1.4;
     const py = Math.sin(angle) * pr * 1.4;
     ctx.beginPath();
     ctx.ellipse(px * 0.6, py * 0.6, pr * 0.7, pr * 0.45, angle, 0, Math.PI * 2);
-    ctx.fillStyle = color + 'aa';
     ctx.fill();
   }
+  ctx.globalAlpha = prev;
   ctx.restore();
 
-  // Core circle
-  const core = ctx.createRadialGradient(x - r * 0.2, y - r * 0.2, 0, x, y, pr);
-  core.addColorStop(0, '#fff3');
-  core.addColorStop(0.4, color);
-  core.addColorStop(1, color + 'cc');
-  ctx.beginPath(); ctx.arc(x, y, pr, 0, Math.PI * 2);
-  ctx.fillStyle = core; ctx.fill();
+  // Core circle — solid, no gradient
+  ctx.globalAlpha = 0.92;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, pr, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Highlight dot
+  ctx.globalAlpha = 0.22;
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(x - pr * 0.25, y - pr * 0.25, pr * 0.38, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = prev;
 }
 
 /* ─── draw a hub node (category) ─── */
-function drawHub(ctx, x, y, r, color, label, t = 0) {
+function drawHub(ctx, x, y, r, color, label, t) {
+  t = t || 0;
   const pulse = 1 + Math.sin(t * 0.5 + x) * 0.04;
   const pr = r * pulse;
+  const prev = ctx.globalAlpha;
 
-  // Outer ring glow
-  ctx.beginPath(); ctx.arc(x, y, pr * 2.2, 0, Math.PI * 2);
-  ctx.strokeStyle = color + '33'; ctx.lineWidth = 1.5; ctx.stroke();
-  ctx.beginPath(); ctx.arc(x, y, pr * 1.6, 0, Math.PI * 2);
-  ctx.strokeStyle = color + '55'; ctx.lineWidth = 1; ctx.stroke();
+  // Outer rings
+  ctx.globalAlpha = 0.12;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(x, y, pr * 2.2, 0, Math.PI * 2); ctx.stroke();
+  ctx.globalAlpha = 0.22;
+  ctx.beginPath(); ctx.arc(x, y, pr * 1.6, 0, Math.PI * 2); ctx.stroke();
 
   // Fill
-  const grd = ctx.createRadialGradient(x, y, 0, x, y, pr);
-  grd.addColorStop(0, color + 'dd');
-  grd.addColorStop(1, color + '77');
-  ctx.beginPath(); ctx.arc(x, y, pr, 0, Math.PI * 2);
-  ctx.fillStyle = grd; ctx.fill();
+  ctx.globalAlpha = 0.75;
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.arc(x, y, pr, 0, Math.PI * 2); ctx.fill();
+
+  ctx.globalAlpha = prev;
 
   // Label
   ctx.fillStyle = '#F2F0F0';
-  ctx.font = `bold 11px Outfit, sans-serif`;
+  ctx.font = 'bold 11px Outfit, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(label.toUpperCase(), x, y);
