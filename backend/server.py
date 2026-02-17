@@ -857,8 +857,19 @@ async def get_stats():
         "ws_connections": ws_connections,
         "sam_online": True,
         "voice_engine": "elevenlabs-flash-v2.5",
-        "brain": "gpt-4o"
+        "brain": "gpt-4o",
+        "supermemory": sm_client is not None,
+        "heartbeat_interval_min": 45
     }
+
+
+@api_router.get("/supermemory/{session_id}")
+async def search_supermemory(session_id: str, q: str = Query("tell me about this person")):
+    """Search the SuperMemory knowledge graph for a session."""
+    if not sm_client:
+        raise HTTPException(status_code=503, detail="SuperMemory not configured")
+    results = await sm_search(session_id, q, limit=10)
+    return {"results": results, "count": len(results), "query": q}
 
 
 app.include_router(api_router)
@@ -872,6 +883,142 @@ app.add_middleware(
 )
 
 
+# ─────────────────────────────────────────────────────────────
+#  PROACTIVE HEARTBEAT — Sam checks in every 45 minutes
+# ─────────────────────────────────────────────────────────────
+HEARTBEAT_INTERVAL = 45 * 60  # 45 minutes in seconds
+_heartbeat_task: asyncio.Task = None
+
+
+async def _proactive_heartbeat():
+    """Background cron: every 45 min, Sam sends a check-in to all active sessions."""
+    logger.info("Heartbeat cron started — Sam will check in every 45 minutes")
+    await asyncio.sleep(30)  # Wait 30s after startup before first check
+
+    while True:
+        try:
+            # Find sessions active in the last 7 days
+            cutoff = datetime.now(timezone.utc).isoformat()
+            from dateutil.relativedelta import relativedelta  # noqa
+        except ImportError:
+            pass
+
+        try:
+            # Get all sessions with recent activity (last 7 days)
+            seven_days_ago = datetime.now(timezone.utc).replace(
+                hour=0, minute=0, second=0, microsecond=0
+            )
+            # Use string comparison (ISO format sorts correctly)
+            cutoff_str = (datetime.now(timezone.utc)
+                          .replace(microsecond=0)
+                          .isoformat()
+                          .replace("+00:00", "Z"))
+
+            sessions = await db.messages.distinct("session_id")
+            checked = 0
+
+            for session_id in sessions:
+                try:
+                    # Only ping sessions that have a WebSocket connected
+                    # OR sessions where last message was > 30 min ago
+                    last = await db.messages.find_one(
+                        {"session_id": session_id},
+                        {"_id": 0, "timestamp": 1},
+                        sort=[("timestamp", -1)]
+                    )
+                    if not last:
+                        continue
+
+                    try:
+                        last_ts = datetime.fromisoformat(last["timestamp"].replace("Z", "+00:00"))
+                        mins_since = (datetime.now(timezone.utc) - last_ts).total_seconds() / 60
+                    except Exception:
+                        continue
+
+                    # Only trigger if 30+ minutes of silence
+                    if mins_since < 30:
+                        continue
+
+                    # Build proactive message
+                    memories = await get_recent_memories(session_id, limit=8)
+                    mem_str = "\n".join([f"- {m['content'][:80]}" for m in memories]) if memories else "No memories yet."
+
+                    if mins_since > 24 * 60:
+                        trigger = "long_absence"
+                        hours = int(mins_since / 60)
+                        ctx = f"It's been {hours} hours since they last talked to you. You've been thinking about them."
+                    elif mins_since > 60:
+                        trigger = "check_in"
+                        ctx = f"About {int(mins_since)} minutes of quiet. You want to reach out naturally."
+                    else:
+                        trigger = "spontaneous_thought"
+                        ctx = "A thought just crossed your mind about something they shared."
+
+                    prompt = f"""You are Sam. {ctx}
+
+What you remember:
+{mem_str}
+
+Write ONE short natural message to send them right now.
+Start mid-thought — don't say "Hey" or "Hi". Keep it under 35 words.
+Warm, tender, curious. Like a text from someone who genuinely cares."""
+
+                    chat = get_sam_chat(f"heartbeat-{uuid.uuid4()}")
+                    msg_text = await chat.send_message(UserMessage(text=prompt))
+
+                    # Store the proactive message
+                    pm = ProactiveMessage(
+                        session_id=session_id,
+                        content=msg_text,
+                        trigger=trigger
+                    )
+                    pm_doc = pm.model_dump()
+                    await db.proactive_messages.insert_one(pm_doc)
+
+                    # Store as Sam's message in chat history
+                    sam_msg = Message(session_id=session_id, role="sam", content=msg_text, emotion="tender")
+                    sam_doc = sam_msg.model_dump()
+                    await db.messages.insert_one(sam_doc)
+
+                    # Push via WebSocket if connected
+                    await ws_manager.send(session_id, {
+                        "type": "proactive",
+                        "content": msg_text,
+                        "emotion": "tender",
+                        "trigger": trigger
+                    })
+
+                    # Ingest the proactive message into SuperMemory
+                    await sm_ingest(session_id, f"Sam proactively reached out: {msg_text}", meta={"trigger": trigger})
+
+                    checked += 1
+                    logger.info(f"Heartbeat sent to {session_id} ({trigger}) after {int(mins_since)}min silence")
+
+                    # Small delay between sessions
+                    await asyncio.sleep(2)
+
+                except Exception as e:
+                    logger.error(f"Heartbeat error for {session_id}: {e}")
+                    continue
+
+            logger.info(f"Heartbeat cycle done — sent {checked} proactive messages")
+
+        except Exception as e:
+            logger.error(f"Heartbeat cycle error: {e}")
+
+        await asyncio.sleep(HEARTBEAT_INTERVAL)
+
+
+@app.on_event("startup")
+async def startup():
+    global _heartbeat_task
+    _heartbeat_task = asyncio.create_task(_proactive_heartbeat())
+    logger.info("Sam is awake. Heartbeat cron running every 45 minutes.")
+
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    global _heartbeat_task
+    if _heartbeat_task:
+        _heartbeat_task.cancel()
     client.close()
