@@ -429,64 +429,71 @@ async def chat_with_sam(req: ChatRequest):
 
 @api_router.post("/tts")
 async def text_to_speech(req: TTSRequest):
-    """Generate speech using ElevenLabs with emotional voice settings."""
+    """Generate speech using ElevenLabs (direct HTTP) with emotional voice settings."""
+    clean_text = clean_for_tts(req.text)
+    tagged_text = add_elevenlabs_emotion_tags(clean_text, req.emotion or "neutral")
+
+    emotion = req.emotion or "neutral"
+    if emotion == "affectionate":
+        stability, similarity, style = 0.45, 0.85, 0.35
+    elif emotion == "laughing":
+        stability, similarity, style = 0.35, 0.80, 0.50
+    elif emotion == "thinking":
+        stability, similarity, style = 0.60, 0.75, 0.20
+    elif emotion == "tender":
+        stability, similarity, style = 0.55, 0.90, 0.25
+    elif emotion == "excited":
+        stability, similarity, style = 0.30, 0.85, 0.60
+    else:
+        stability, similarity, style = 0.50, 0.82, 0.30
+
+    voice_id = SAMANTHA_VOICE_ID
+    url = f"{ELEVENLABS_BASE}/text-to-speech/{voice_id}"
+    headers = {
+        "xi-api-key": ELEVENLABS_API_KEY,
+        "Content-Type": "application/json",
+        "Accept": "audio/mpeg"
+    }
+    payload = {
+        "text": tagged_text[:4096],
+        "model_id": "eleven_flash_v2_5",
+        "voice_settings": {
+            "stability": stability,
+            "similarity_boost": similarity,
+            "style": style,
+            "use_speaker_boost": True
+        }
+    }
+
     try:
-        clean_text = clean_for_tts(req.text)
-        tagged_text = add_elevenlabs_emotion_tags(clean_text, req.emotion or "neutral")
-        
-        # Tune voice settings by emotion
-        emotion = req.emotion or "neutral"
-        if emotion == "affectionate":
-            stability, similarity, style = 0.45, 0.85, 0.35
-        elif emotion == "laughing":
-            stability, similarity, style = 0.35, 0.80, 0.50
-        elif emotion == "thinking":
-            stability, similarity, style = 0.60, 0.75, 0.20
-        elif emotion == "tender":
-            stability, similarity, style = 0.55, 0.90, 0.25
-        elif emotion == "excited":
-            stability, similarity, style = 0.30, 0.85, 0.60
-        else:
-            stability, similarity, style = 0.50, 0.82, 0.30
+        async with httpx.AsyncClient(timeout=30) as http:
+            response = await http.post(url, json=payload, headers=headers)
 
-        audio_generator = el_client.text_to_speech.convert(
-            text=tagged_text,
-            voice_id=SAMANTHA_VOICE_ID,
-            model_id="eleven_flash_v2_5",  # fastest model ~75ms
-            voice_settings=VoiceSettings(
-                stability=stability,
-                similarity_boost=similarity,
-                style=style,
-                use_speaker_boost=True
-            )
-        )
-
-        # Collect all audio chunks
-        audio_data = b""
-        async for chunk in audio_generator:
-            audio_data += chunk
-
-        return StreamingResponse(
-            io.BytesIO(audio_data),
-            media_type="audio/mpeg",
-            headers={"Content-Disposition": "attachment; filename=sam_voice.mp3"}
-        )
-    except Exception as e:
-        logger.error(f"ElevenLabs TTS error: {e}")
-        # Fallback to OpenAI TTS
-        try:
-            from emergentintegrations.llm.openai import OpenAITextToSpeech
-            tts = OpenAITextToSpeech(api_key=EMERGENT_LLM_KEY)
-            audio_bytes = await tts.generate_speech(
-                text=clean_for_tts(req.text), model="tts-1", voice="nova"
-            )
+        if response.status_code == 200:
             return StreamingResponse(
-                io.BytesIO(audio_bytes), media_type="audio/mpeg",
+                io.BytesIO(response.content),
+                media_type="audio/mpeg",
                 headers={"Content-Disposition": "attachment; filename=sam_voice.mp3"}
             )
-        except Exception as e2:
-            logger.error(f"Fallback TTS error: {e2}")
-            raise HTTPException(status_code=500, detail="Voice generation failed")
+        else:
+            logger.warning(f"ElevenLabs {response.status_code}: {response.text[:200]}, falling back to OpenAI TTS")
+    except Exception as e:
+        logger.warning(f"ElevenLabs error: {e}, falling back to OpenAI TTS")
+
+    # Fallback to OpenAI TTS
+    try:
+        from emergentintegrations.llm.openai import OpenAITextToSpeech
+        tts = OpenAITextToSpeech(api_key=EMERGENT_LLM_KEY)
+        audio_bytes = await tts.generate_speech(
+            text=clean_text, model="tts-1", voice="nova"
+        )
+        return StreamingResponse(
+            io.BytesIO(audio_bytes), media_type="audio/mpeg",
+            headers={"Content-Disposition": "attachment; filename=sam_voice.mp3"}
+        )
+    except Exception as e2:
+        logger.error(f"Fallback TTS error: {e2}")
+        raise HTTPException(status_code=500, detail="Voice generation failed")
 
 
 @api_router.get("/voices")
