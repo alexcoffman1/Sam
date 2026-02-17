@@ -91,17 +91,37 @@ class SamAPITester:
         return self.run_test("Root API Status", "GET", "")
 
     def test_stats_endpoint(self):
-        """Test stats endpoint - should return system statistics"""
+        """Test stats endpoint - should return system statistics with SuperMemory and heartbeat info"""
         success, data = self.run_test("System Statistics", "GET", "stats")
         if success and data:
-            # Validate expected stats fields
-            expected_fields = ['total_messages', 'total_memories', 'total_sessions', 'sam_online', 'voice_engine']
+            # Validate expected stats fields including new ones
+            expected_fields = ['total_messages', 'total_memories', 'total_sessions', 'sam_online', 'voice_engine', 
+                             'supermemory', 'heartbeat_interval_min', 'total_proactive']
             missing_fields = [f for f in expected_fields if f not in data]
             if missing_fields:
                 print(f"   ⚠️  Missing stats fields: {missing_fields}")
             else:
                 print(f"   🎯 All stats fields present")
                 print(f"      Sam online: {data.get('sam_online')}, Voice: {data.get('voice_engine')}")
+                
+            # Check SuperMemory integration
+            if data.get('supermemory') == True:
+                print(f"   ✅ SuperMemory: connected")
+            else:
+                print(f"   ❌ SuperMemory: not connected")
+                
+            # Check heartbeat interval
+            if data.get('heartbeat_interval_min') == 45:
+                print(f"   ✅ Heartbeat interval: {data.get('heartbeat_interval_min')} minutes")
+            else:
+                print(f"   ⚠️  Heartbeat interval: {data.get('heartbeat_interval_min')} (expected 45)")
+                
+            # Check if heartbeat has already fired
+            total_proactive = data.get('total_proactive', 0)
+            if total_proactive > 0:
+                print(f"   ✅ Proactive messages generated: {total_proactive}")
+            else:
+                print(f"   ⚠️  No proactive messages yet: {total_proactive}")
         return success
 
     def test_voices_endpoint(self):
