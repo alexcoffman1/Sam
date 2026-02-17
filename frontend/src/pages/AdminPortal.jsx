@@ -239,6 +239,9 @@ export default function AdminPortal({ sessionId }) {
                   <p className="text-xs mt-1" style={{ color: '#635858', fontFamily: 'Manrope, sans-serif' }}>
                     Brain: {stats?.brain || 'gpt-4o'} · Voice: {stats?.voice_engine || 'elevenlabs-flash-v2.5'}
                   </p>
+                  <p className="text-xs mt-0.5" style={{ color: '#635858', fontFamily: 'Manrope, sans-serif' }}>
+                    SuperMemory: {stats?.supermemory ? '✓ connected' : '○ offline'} · Heartbeat: every {stats?.heartbeat_interval_min || 45} min
+                  </p>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full" style={{ background: '#34D399', boxShadow: '0 0 6px #34D399' }} />
