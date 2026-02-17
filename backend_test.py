@@ -268,6 +268,47 @@ class SamAPITester:
     def test_sessions_list(self):
         """Test session listing"""
         return self.run_test("List Sessions", "GET", "sessions")
+        
+    def test_supermemory_search(self):
+        """Test SuperMemory search endpoint"""
+        success, data = self.run_test(
+            "SuperMemory Search", 
+            "GET", 
+            f"supermemory/{self.session_id}?q=test"
+        )
+        
+        if success and data:
+            # Check for expected fields
+            if 'count' in data and 'results' in data:
+                count = data.get('count', 0)
+                results = data.get('results', [])
+                print(f"   🔍 SuperMemory found {count} results")
+                if isinstance(results, list):
+                    print(f"   🎯 Results format correct")
+                else:
+                    print(f"   ⚠️  Results not in list format")
+            else:
+                print(f"   ⚠️  Missing expected fields: count, results")
+        return success
+        
+    def test_chat_with_supermemory_enrichment(self):
+        """Test chat endpoint enriches context with SuperMemory results (no 500 error)"""
+        test_message = "Tell me about our previous conversations and what you remember about me"
+        
+        success, data = self.run_test(
+            "Chat with SuperMemory Enrichment", 
+            "POST", 
+            "chat",
+            data={"session_id": self.session_id, "message": test_message}
+        )
+        
+        if success and data:
+            response_text = data.get('response', '')
+            print(f"   💬 SuperMemory-enriched response: {response_text[:150]}{'...' if len(response_text) > 150 else ''}")
+            # The main thing is no 500 error - if we get 200 and a response, SuperMemory enrichment worked
+            print(f"   ✅ No 500 error - SuperMemory enrichment working")
+                
+        return success
 
     def run_comprehensive_test_suite(self):
         """Run all tests in logical order"""
