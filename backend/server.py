@@ -301,38 +301,22 @@ async def get_memory_graph(session_id: str):
 async def text_to_speech(req: TTSRequest):
     """Generate speech using OpenAI TTS via emergentintegrations."""
     try:
-        import requests as req_lib
+        from emergentintegrations.llm.openai import OpenAITextToSpeech
         
-        # Use OpenAI TTS directly
-        headers = {
-            "Authorization": f"Bearer {EMERGENT_LLM_KEY}",
-            "Content-Type": "application/json"
-        }
+        tts = OpenAITextToSpeech(api_key=EMERGENT_LLM_KEY)
         
         # Clean text for TTS (remove markdown)
         clean_text = req.text.replace("**", "").replace("*", "").replace("#", "").replace("`", "")
         clean_text = clean_text[:4096]  # TTS limit
         
-        payload = {
-            "model": "tts-1",
-            "input": clean_text,
-            "voice": "nova",
-            "response_format": "mp3"
-        }
-        
-        tts_url = "https://api.openai.com/v1/audio/speech"
-        
-        # Use emergent key as OpenAI key
-        response = req_lib.post(tts_url, json=payload, headers=headers, timeout=30)
-        
-        if response.status_code != 200:
-            logger.error(f"TTS error: {response.status_code} {response.text}")
-            raise HTTPException(status_code=500, detail="TTS generation failed")
-        
-        audio_data = response.content
+        audio_bytes = await tts.generate_speech(
+            text=clean_text,
+            model="tts-1",
+            voice="nova"
+        )
         
         return StreamingResponse(
-            io.BytesIO(audio_data),
+            io.BytesIO(audio_bytes),
             media_type="audio/mpeg",
             headers={"Content-Disposition": "attachment; filename=sam_voice.mp3"}
         )
