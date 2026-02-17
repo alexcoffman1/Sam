@@ -27,8 +27,12 @@ logger = logging.getLogger(__name__)
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
 ELEVENLABS_API_KEY = os.environ.get('ELEVENLABS_API_KEY')
 
-# ElevenLabs client
-el_client = AsyncElevenLabs(api_key=ELEVENLABS_API_KEY)
+# ─────────────────────────────────────────────────────────────
+#  ELEVENLABS VOICE CONFIG — direct HTTP (avoids SDK proxy issues)
+#  Sarah: EXAVITQu4vr4xnSDxMaL — Mature, Reassuring, Warm Female
+# ─────────────────────────────────────────────────────────────
+SAMANTHA_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"
+ELEVENLABS_BASE = "https://api.elevenlabs.io/v1"
 
 # ─────────────────────────────────────────────────────────────
 #  SAM'S SOUL — the complete personality system prompt
