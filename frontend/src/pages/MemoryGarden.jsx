@@ -26,6 +26,10 @@ export default function MemoryGarden({ sessionId }) {
   const [selectedNode, setSelectedNode] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [summary, setSummary] = useState(null);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const audioRef = useRef(null);
   const canvasRef = useRef(null);
   const animRef = useRef(null);
   const nodesRef = useRef([]);
