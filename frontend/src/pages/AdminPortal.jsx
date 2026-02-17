@@ -556,3 +556,89 @@ function ActionButton({ icon, label, onClick, color, testId, danger, disabled })
     </button>
   );
 }
+
+function SuperMemorySearch({ sessionId }) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  const search = async () => {
+    if (!query.trim()) return;
+    setIsSearching(true);
+    try {
+      const res = await axios.get(`${API}/supermemory/${sessionId}?q=${encodeURIComponent(query)}`);
+      setResults(res.data.results || []);
+    } catch (e) {
+      toast.error('SuperMemory search failed');
+      setResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  return (
+    <div className="glass-panel rounded-2xl p-6">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-2 h-2 rounded-full" style={{ background: '#34D399', boxShadow: '0 0 6px #34D399' }} />
+        <h3 className="text-base font-semibold" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
+          SuperMemory — Eternal Knowledge Graph
+        </h3>
+      </div>
+      <div className="flex gap-2 mb-4">
+        <input
+          data-testid="supermemory-search-input"
+          type="text"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && search()}
+          placeholder="Search Sam's eternal memory..."
+          className="flex-1 bg-transparent text-sm outline-none px-4 py-2 rounded-xl"
+          style={{
+            color: '#F2F0F0',
+            fontFamily: 'Manrope, sans-serif',
+            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'rgba(255,255,255,0.03)'
+          }}
+        />
+        <button
+          data-testid="supermemory-search-btn"
+          onClick={search}
+          disabled={isSearching || !query.trim()}
+          className="px-4 py-2 rounded-xl text-sm transition-colors duration-200"
+          style={{
+            background: 'rgba(200,16,46,0.15)',
+            color: isSearching ? '#635858' : '#E8927C',
+            border: '1px solid rgba(200,16,46,0.25)',
+            fontFamily: 'Manrope, sans-serif'
+          }}
+        >
+          {isSearching ? '...' : 'Search'}
+        </button>
+      </div>
+      {results.length > 0 ? (
+        <div className="space-y-2 max-h-48 overflow-y-auto">
+          {results.map((r, i) => (
+            <div key={i} data-testid="supermemory-result"
+              className="p-3 rounded-xl text-sm"
+              style={{
+                background: 'rgba(255,255,255,0.02)',
+                border: '1px solid rgba(255,255,255,0.04)',
+                color: '#A49898',
+                fontFamily: 'Manrope, sans-serif'
+              }}>
+              {r}
+            </div>
+          ))}
+        </div>
+      ) : query && !isSearching ? (
+        <p className="text-xs text-center py-3" style={{ color: '#635858', fontFamily: 'Manrope, sans-serif' }}>
+          No memories found — start chatting to build the knowledge graph
+        </p>
+      ) : (
+        <p className="text-xs" style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>
+          Sam's eternal memory — every detail she's ever learned, semantically searchable
+        </p>
+      )}
+    </div>
+  );
+}
