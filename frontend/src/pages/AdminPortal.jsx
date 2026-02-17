@@ -346,6 +346,9 @@ export default function AdminPortal({ sessionId }) {
         {/* ── MEMORY TAB ── */}
         {activeTab === 'memory' && (
           <div className="space-y-6">
+            {/* SuperMemory Search */}
+            <SuperMemorySearch sessionId={sessionId} />
+
             {/* Weekly reflections */}
             <div className="glass-panel rounded-2xl p-6">
               <h3 className="text-base font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
