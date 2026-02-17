@@ -326,21 +326,30 @@ async def sm_search(session_id: str, query: str, limit: int = 6) -> list:
         return []
 
 async def build_context_prompt(session_id: str, user_msg: str) -> str:
-    """Build a rich context prompt with history + memories for Sam."""
+    """Build a rich context prompt with history + MongoDB memories + SuperMemory knowledge graph."""
     history = await get_conversation_history(session_id, limit=30)
     memories = await get_recent_memories(session_id, limit=10)
     weekly = await db.weekly_reflections.find_one(
         {"session_id": session_id}, {"_id": 0}, sort=[("week_number", -1)]
     )
 
+    # SuperMemory semantic search for this specific message
+    sm_results = await sm_search(session_id, user_msg, limit=5)
+
     parts = []
 
+    # SuperMemory eternal knowledge graph (most precise recall)
+    if sm_results:
+        sm_lines = "\n".join([f"  • {r[:150]}" for r in sm_results if r])
+        parts.append(f"[SuperMemory — what you know about this person (semantic recall):\n{sm_lines}\n]")
+
+    # MongoDB recent memories
     if memories:
         mem_lines = "\n".join([f"  • {m['content'][:120]}" for m in memories])
-        parts.append(f"[Things you remember about this person:\n{mem_lines}\n]")
+        parts.append(f"[Recent extracted memories:\n{mem_lines}\n]")
 
     if weekly:
-        parts.append(f"[Your latest weekly reflection about them: {weekly['reflection'][:300]}]")
+        parts.append(f"[Your latest weekly reflection: {weekly['reflection'][:300]}]")
 
     if history:
         conv_lines = []
