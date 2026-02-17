@@ -1,0 +1,57 @@
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Flower2, Settings, MessageCircle } from 'lucide-react';
+
+export default function NavBar() {
+  const location = useLocation();
+  const isActive = (path) => location.pathname === path;
+
+  return (
+    <nav
+      data-testid="navbar"
+      className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-4"
+      style={{ background: 'linear-gradient(to bottom, rgba(9,5,5,0.9) 0%, transparent 100%)' }}
+    >
+      <Link to="/" data-testid="nav-logo" className="flex items-center gap-2 group">
+        <div
+          className="w-7 h-7 rounded-full transition-transform duration-300 group-hover:scale-110"
+          style={{
+            background: 'radial-gradient(circle, #E8927C 0%, #C8102E 70%)',
+            boxShadow: '0 0 16px 4px rgba(200,16,46,0.4)'
+          }}
+        />
+        <span
+          className="text-lg font-semibold tracking-wide"
+          style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}
+        >
+          Sam
+        </span>
+      </Link>
+
+      <div className="flex items-center gap-1">
+        <NavLink to="/" icon={<MessageCircle size={16} />} label="Chat" isActive={isActive('/')} testId="nav-chat" />
+        <NavLink to="/garden" icon={<Flower2 size={16} />} label="Garden" isActive={isActive('/garden')} testId="nav-garden" />
+        <NavLink to="/admin" icon={<Settings size={16} />} label="Admin" isActive={isActive('/admin')} testId="nav-admin" />
+      </div>
+    </nav>
+  );
+}
+
+function NavLink({ to, icon, label, isActive, testId }) {
+  return (
+    <Link
+      to={to}
+      data-testid={testId}
+      className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm transition-colors duration-200"
+      style={{
+        color: isActive ? '#E8927C' : '#A49898',
+        background: isActive ? 'rgba(200,16,46,0.12)' : 'transparent',
+        border: isActive ? '1px solid rgba(200,16,46,0.25)' : '1px solid transparent',
+        fontFamily: 'Manrope, sans-serif'
+      }}
+    >
+      {icon}
+      <span>{label}</span>
+    </Link>
+  );
+}
