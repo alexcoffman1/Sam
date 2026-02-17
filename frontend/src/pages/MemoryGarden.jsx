@@ -28,7 +28,7 @@ function drawFlower(ctx, x, y, r, color, glowColor, petals = 6, t = 0) {
 
   // Outer glow
   const grd = ctx.createRadialGradient(x, y, 0, x, y, pr * 3.2);
-  grd.addColorStop(0, glowColor.replace(')', ',0.45)').replace('rgba', 'rgba'));
+  grd.addColorStop(0, glowColor);
   grd.addColorStop(1, 'transparent');
   ctx.fillStyle = grd;
   ctx.beginPath(); ctx.arc(x, y, pr * 3.2, 0, Math.PI * 2); ctx.fill();
