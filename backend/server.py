@@ -498,14 +498,22 @@ async def text_to_speech(req: TTSRequest):
 
 @api_router.get("/voices")
 async def list_voices():
-    """List available ElevenLabs voices."""
+    """List available ElevenLabs voices via direct HTTP."""
     try:
-        voices_response = await el_client.voices.get_all()
-        voices = [
-            {"voice_id": v.voice_id, "name": v.name, "labels": dict(v.labels) if v.labels else {}}
-            for v in voices_response.voices
-        ]
-        return {"voices": voices, "current": SAMANTHA_VOICE_ID}
+        async with httpx.AsyncClient(timeout=15) as http:
+            response = await http.get(
+                f"{ELEVENLABS_BASE}/voices",
+                headers={"xi-api-key": ELEVENLABS_API_KEY}
+            )
+        if response.status_code == 200:
+            data = response.json()
+            voices = [
+                {"voice_id": v["voice_id"], "name": v["name"], "labels": v.get("labels", {})}
+                for v in data.get("voices", [])
+            ]
+            return {"voices": voices, "current": SAMANTHA_VOICE_ID}
+        else:
+            return {"voices": [], "current": SAMANTHA_VOICE_ID, "error": f"Status {response.status_code}"}
     except Exception as e:
         logger.error(f"Voices error: {e}")
         return {"voices": [], "current": SAMANTHA_VOICE_ID, "error": str(e)}
