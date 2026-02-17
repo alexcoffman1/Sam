@@ -6,11 +6,11 @@ import { toast } from 'sonner';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const SENTIMENT_COLORS = {
-  love:      { fill: '#C8102E', glow: 'rgba(200,16,46,0.5)',     label: 'love' },
-  joy:       { fill: '#F0A500', glow: 'rgba(240,165,0,0.5)',     label: 'joy' },
-  sadness:   { fill: '#60A5FA', glow: 'rgba(96,165,250,0.4)',    label: 'sadness' },
-  curiosity: { fill: '#E8927C', glow: 'rgba(232,146,124,0.5)',   label: 'curiosity' },
-  neutral:   { fill: '#7a6060', glow: 'rgba(122,96,96,0.35)',    label: 'neutral' },
+  love:      { fill: '#C8102E', label: 'love' },
+  joy:       { fill: '#F0A500', label: 'joy' },
+  sadness:   { fill: '#60A5FA', label: 'sadness' },
+  curiosity: { fill: '#E8927C', label: 'curiosity' },
+  neutral:   { fill: '#7a6060', label: 'neutral' },
 };
 
 const CATEGORY_META = {
