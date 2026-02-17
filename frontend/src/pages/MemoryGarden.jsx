@@ -216,7 +216,7 @@ export default function MemoryGarden({ sessionId }) {
   const generateInnerLife = useCallback(async () => {
     setIsGenerating(true);
     try {
-      const res = await axios.post(`${API}/inner-life/${sessionId}`);
+      await axios.post(`${API}/inner-life/${sessionId}`);
       toast.success('Sam reflected...');
       await fetchGraph();
     } catch (e) {
@@ -225,6 +225,40 @@ export default function MemoryGarden({ sessionId }) {
       setIsGenerating(false);
     }
   }, [sessionId, fetchGraph]);
+
+  const summarizeGarden = useCallback(async () => {
+    setIsSummarizing(true);
+    setSummary(null);
+    try {
+      const res = await axios.get(`${API}/memories/${sessionId}/summary`);
+      setSummary(res.data);
+    } catch (e) {
+      toast.error('Summary failed');
+    } finally {
+      setIsSummarizing(false);
+    }
+  }, [sessionId]);
+
+  const playSummaryAudio = useCallback(async () => {
+    if (!summary?.summary) return;
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; setIsPlayingAudio(false); return; }
+    setIsPlayingAudio(true);
+    try {
+      const res = await axios.post(`${API}/tts`,
+        { text: summary.summary, session_id: sessionId, emotion: 'affectionate' },
+        { responseType: 'blob' }
+      );
+      const url = URL.createObjectURL(res.data);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onended = () => { setIsPlayingAudio(false); audioRef.current = null; URL.revokeObjectURL(url); };
+      audio.onerror = () => { setIsPlayingAudio(false); audioRef.current = null; };
+      await audio.play();
+    } catch (e) {
+      setIsPlayingAudio(false);
+      toast.error('Voice playback failed');
+    }
+  }, [summary, sessionId]);
 
   return (
     <div className="relative w-full h-full flex flex-col overflow-hidden" style={{ background: 'var(--color-bg)', paddingTop: '64px' }}>
