@@ -274,6 +274,16 @@ export default function MemoryGarden({ sessionId }) {
         </div>
         <div className="flex items-center gap-3">
           <button
+            data-testid="summarize-garden-btn"
+            onClick={summarizeGarden}
+            disabled={isSummarizing}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm glass-panel transition-colors duration-200"
+            style={{ color: isSummarizing ? '#635858' : '#F2F0F0', fontFamily: 'Manrope, sans-serif' }}
+          >
+            <BookOpen size={14} />
+            {isSummarizing ? 'Reflecting...' : 'What do you remember?'}
+          </button>
+          <button
             data-testid="generate-reflection-btn"
             onClick={generateInnerLife}
             disabled={isGenerating}
@@ -294,6 +304,68 @@ export default function MemoryGarden({ sessionId }) {
           </button>
         </div>
       </div>
+
+      {/* Summary panel */}
+      {(summary || isSummarizing) && (
+        <div
+          data-testid="garden-summary-panel"
+          className="mx-4 mb-3 glass-panel rounded-2xl px-6 py-4 message-enter flex items-start gap-4"
+        >
+          {isSummarizing ? (
+            <div className="flex items-center gap-3 w-full">
+              <div className="flex items-center gap-1.5">
+                <div className="typing-dot" />
+                <div className="typing-dot" />
+                <div className="typing-dot" />
+              </div>
+              <span className="text-sm" style={{ color: 'var(--color-text-faint)', fontFamily: 'Manrope, sans-serif' }}>
+                Sam is looking through her garden...
+              </span>
+            </div>
+          ) : summary && (
+            <>
+              <div
+                className="w-8 h-8 rounded-full flex-shrink-0 mt-0.5"
+                style={{ background: 'radial-gradient(circle, #E8927C, #C8102E)', boxShadow: '0 0 12px rgba(200,16,46,0.3)' }}
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-xs uppercase tracking-widest" style={{ color: 'var(--color-text-faint)', fontFamily: 'Manrope, sans-serif' }}>
+                    Sam — {summary.memory_count} memories
+                  </span>
+                  {summary.categories?.map(c => (
+                    <span key={c} className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.04)', color: '#635858', fontFamily: 'Manrope, sans-serif' }}>
+                      {c}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-sm leading-relaxed" style={{ color: '#F2F0F0', fontFamily: 'Manrope, sans-serif' }}>
+                  {summary.summary}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  data-testid="play-summary-audio-btn"
+                  onClick={playSummaryAudio}
+                  className="p-1.5 rounded-full transition-colors duration-200"
+                  style={{ color: isPlayingAudio ? '#E8927C' : '#635858' }}
+                  title={isPlayingAudio ? 'Stop' : 'Hear Sam say this'}
+                >
+                  <Volume2 size={15} />
+                </button>
+                <button
+                  data-testid="close-summary-btn"
+                  onClick={() => { setSummary(null); if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; setIsPlayingAudio(false); } }}
+                  className="p-1.5 rounded-full transition-colors duration-200"
+                  style={{ color: '#635858' }}
+                >
+                  <X size={15} />
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Canvas */}
       <div className="relative flex-1 mx-4 mb-4 rounded-2xl overflow-hidden glass-panel">
