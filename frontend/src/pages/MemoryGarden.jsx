@@ -1,45 +1,133 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import axios from 'axios';
-import { RefreshCw, Plus, BookOpen, X, Volume2 } from 'lucide-react';
+import { RefreshCw, Plus, BookOpen, X, Volume2, Search, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const SENTIMENT_COLORS = {
-  love: '#C8102E',
-  joy: '#F0A500',
-  sadness: '#60A5FA',
-  curiosity: '#E8927C',
-  neutral: '#635858'
+  love:      { fill: '#C8102E', glow: 'rgba(200,16,46,0.5)',     label: 'love' },
+  joy:       { fill: '#F0A500', glow: 'rgba(240,165,0,0.5)',     label: 'joy' },
+  sadness:   { fill: '#60A5FA', glow: 'rgba(96,165,250,0.4)',    label: 'sadness' },
+  curiosity: { fill: '#E8927C', glow: 'rgba(232,146,124,0.5)',   label: 'curiosity' },
+  neutral:   { fill: '#7a6060', glow: 'rgba(122,96,96,0.35)',    label: 'neutral' },
 };
 
-const CATEGORY_SHAPES = {
-  person: '●',
-  event: '◆',
-  feeling: '♡',
-  preference: '★',
-  thought: '◎'
+const CATEGORY_META = {
+  person:     { symbol: '●', color: '#E8927C', label: 'People'      },
+  event:      { symbol: '◆', color: '#F0A500', label: 'Events'      },
+  feeling:    { symbol: '♡', color: '#C8102E', label: 'Feelings'    },
+  preference: { symbol: '★', color: '#60A5FA', label: 'Preferences' },
+  thought:    { symbol: '◎', color: '#A49898', label: 'Thoughts'    },
 };
+
+/* ─── draw a flower node on canvas ─── */
+function drawFlower(ctx, x, y, r, color, glowColor, petals = 6, t = 0) {
+  const pulse = 1 + Math.sin(t + x * 0.01) * 0.06;
+  const pr = r * pulse;
+
+  // Outer glow
+  const grd = ctx.createRadialGradient(x, y, 0, x, y, pr * 3.2);
+  grd.addColorStop(0, glowColor.replace(')', ',0.45)').replace('rgba', 'rgba'));
+  grd.addColorStop(1, 'transparent');
+  ctx.fillStyle = grd;
+  ctx.beginPath(); ctx.arc(x, y, pr * 3.2, 0, Math.PI * 2); ctx.fill();
+
+  // Petals
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(t * 0.15);
+  for (let i = 0; i < petals; i++) {
+    const angle = (i / petals) * Math.PI * 2;
+    const px = Math.cos(angle) * pr * 1.4;
+    const py = Math.sin(angle) * pr * 1.4;
+    ctx.beginPath();
+    ctx.ellipse(px * 0.6, py * 0.6, pr * 0.7, pr * 0.45, angle, 0, Math.PI * 2);
+    ctx.fillStyle = color + 'aa';
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // Core circle
+  const core = ctx.createRadialGradient(x - r * 0.2, y - r * 0.2, 0, x, y, pr);
+  core.addColorStop(0, '#fff3');
+  core.addColorStop(0.4, color);
+  core.addColorStop(1, color + 'cc');
+  ctx.beginPath(); ctx.arc(x, y, pr, 0, Math.PI * 2);
+  ctx.fillStyle = core; ctx.fill();
+}
+
+/* ─── draw a hub node (category) ─── */
+function drawHub(ctx, x, y, r, color, label, t = 0) {
+  const pulse = 1 + Math.sin(t * 0.5 + x) * 0.04;
+  const pr = r * pulse;
+
+  // Outer ring glow
+  ctx.beginPath(); ctx.arc(x, y, pr * 2.2, 0, Math.PI * 2);
+  ctx.strokeStyle = color + '33'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.beginPath(); ctx.arc(x, y, pr * 1.6, 0, Math.PI * 2);
+  ctx.strokeStyle = color + '55'; ctx.lineWidth = 1; ctx.stroke();
+
+  // Fill
+  const grd = ctx.createRadialGradient(x, y, 0, x, y, pr);
+  grd.addColorStop(0, color + 'dd');
+  grd.addColorStop(1, color + '77');
+  ctx.beginPath(); ctx.arc(x, y, pr, 0, Math.PI * 2);
+  ctx.fillStyle = grd; ctx.fill();
+
+  // Label
+  ctx.fillStyle = '#F2F0F0';
+  ctx.font = `bold 11px Outfit, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label.toUpperCase(), x, y);
+}
+
+/* ─── draw curved vine link ─── */
+function drawVine(ctx, sx, sy, tx, ty, color) {
+  const mx = (sx + tx) / 2 + (Math.random() * 20 - 10);
+  const my = (sy + ty) / 2 + (Math.random() * 20 - 10);
+  ctx.beginPath();
+  ctx.moveTo(sx, sy);
+  ctx.quadraticCurveTo(mx, my, tx, ty);
+  ctx.strokeStyle = color + '30';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3, 5]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
 
 export default function MemoryGarden({ sessionId }) {
-  const [graphData, setGraphData] = useState({ nodes: [], links: [] });
+  const [memories, setMemories]         = useState([]);
+  const [graphData, setGraphData]       = useState({ nodes: [], links: [] });
   const [selectedNode, setSelectedNode] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [hoveredNode, setHoveredNode]   = useState(null);
+  const [isLoading, setIsLoading]       = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
-  const [summary, setSummary] = useState(null);
+  const [summary, setSummary]           = useState(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const audioRef = useRef(null);
-  const canvasRef = useRef(null);
-  const animRef = useRef(null);
-  const nodesRef = useRef([]);
-  const [tick, setTick] = useState(0);
+  const [filterCat, setFilterCat]       = useState('all');
+  const [filterSentiment, setFilterSentiment] = useState('all');
+  const [searchTerm, setSearchTerm]     = useState('');
+  const [sidebarOpen, setSidebarOpen]   = useState(true);
 
-  const fetchGraph = useCallback(async () => {
+  const audioRef   = useRef(null);
+  const canvasRef  = useRef(null);
+  const animRef    = useRef(null);
+  const nodesRef   = useRef([]);
+  const linksRef   = useRef([]);
+
+  /* ── fetch data ── */
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await axios.get(`${API}/memories/${sessionId}/graph`);
-      setGraphData(res.data);
+      const [graphRes, memRes] = await Promise.all([
+        axios.get(`${API}/memories/${sessionId}/graph`),
+        axios.get(`${API}/memories/${sessionId}`)
+      ]);
+      setGraphData(graphRes.data);
+      setMemories(memRes.data);
     } catch (e) {
       toast.error('Could not load memory garden');
     } finally {
@@ -47,201 +135,210 @@ export default function MemoryGarden({ sessionId }) {
     }
   }, [sessionId]);
 
-  useEffect(() => {
-    fetchGraph();
-  }, [fetchGraph]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Initialize physics simulation positions
+  /* ── stats derived ── */
+  const stats = useMemo(() => {
+    const byCat = {}; const bySent = {};
+    memories.forEach(m => {
+      byCat[m.category]  = (byCat[m.category]  || 0) + 1;
+      bySent[m.sentiment] = (bySent[m.sentiment] || 0) + 1;
+    });
+    return { byCat, bySent, total: memories.length };
+  }, [memories]);
+
+  /* ── filtered sidebar list ── */
+  const filteredMemories = useMemo(() => {
+    return memories.filter(m => {
+      if (filterCat !== 'all' && m.category !== filterCat) return false;
+      if (filterSentiment !== 'all' && m.sentiment !== filterSentiment) return false;
+      if (searchTerm && !m.content.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+      return true;
+    });
+  }, [memories, filterCat, filterSentiment, searchTerm]);
+
+  /* ── initialise node positions ── */
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || graphData.nodes.length === 0) return;
-    const W = canvas.offsetWidth || 800;
+    const W = canvas.offsetWidth || 900;
     const H = canvas.offsetHeight || 600;
 
-    const positioned = graphData.nodes.map((node, i) => {
+    nodesRef.current = graphData.nodes.map((node, i) => {
       const existing = nodesRef.current.find(n => n.id === node.id);
-      if (existing) return { ...node, x: existing.x, y: existing.y, vx: existing.vx || 0, vy: existing.vy || 0 };
+      if (existing) return { ...node, x: existing.x, y: existing.y, vx: 0, vy: 0 };
       const angle = (i / graphData.nodes.length) * Math.PI * 2;
-      const r = node.type === 'category' ? 80 : 120 + Math.random() * 100;
-      return {
-        ...node,
-        x: W / 2 + Math.cos(angle) * r,
-        y: H / 2 + Math.sin(angle) * r,
-        vx: 0,
-        vy: 0
-      };
+      const r = node.type === 'category' ? 60 : 100 + Math.random() * 180;
+      return { ...node, x: W / 2 + Math.cos(angle) * r, y: H / 2 + Math.sin(angle) * r, vx: 0, vy: 0 };
     });
-    nodesRef.current = positioned;
-    setTick(t => t + 1);
+    linksRef.current = graphData.links;
   }, [graphData]);
 
-  // Physics tick
+  /* ── physics + draw loop ── */
   useEffect(() => {
+    let t = 0;
     const simulate = () => {
       const nodes = nodesRef.current;
-      if (!nodes.length) return;
+      const links = linksRef.current;
       const canvas = canvasRef.current;
       if (!canvas) return;
-      const W = canvas.offsetWidth || 800;
-      const H = canvas.offsetHeight || 600;
-      const cx = W / 2, cy = H / 2;
 
+      const W = canvas.offsetWidth || 900;
+      const H = canvas.offsetHeight || 600;
+      canvas.width  = W;
+      canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      t += 0.016;
+
+      /* physics */
+      const cx = W / 2, cy = H / 2;
       for (let i = 0; i < nodes.length; i++) {
         const n = nodes[i];
-        // Center gravity
-        n.vx += (cx - n.x) * 0.002;
-        n.vy += (cy - n.y) * 0.002;
-
-        // Repulsion
+        n.vx += (cx - n.x) * 0.0015;
+        n.vy += (cy - n.y) * 0.0015;
         for (let j = i + 1; j < nodes.length; j++) {
           const m = nodes[j];
-          const dx = n.x - m.x;
-          const dy = n.y - m.y;
-          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          const minDist = 60;
-          if (dist < minDist) {
-            const f = (minDist - dist) / dist * 0.5;
-            n.vx += dx * f;
-            n.vy += dy * f;
-            m.vx -= dx * f;
-            m.vy -= dy * f;
+          const dx = n.x - m.x, dy = n.y - m.y;
+          const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+          const ideal = n.type === 'category' || m.type === 'category' ? 90 : 70;
+          if (dist < ideal) {
+            const f = (ideal - dist) / dist * 0.6;
+            n.vx += dx*f; n.vy += dy*f; m.vx -= dx*f; m.vy -= dy*f;
           }
         }
-
-        // Spring forces along links
-        graphData.links.forEach(link => {
-          const src = nodes.find(n => n.id === link.source);
-          const tgt = nodes.find(n => n.id === link.target);
+        links.forEach(lk => {
+          const src = nodes.find(x => x.id === lk.source);
+          const tgt = nodes.find(x => x.id === lk.target);
           if (!src || !tgt) return;
-          const dx = tgt.x - src.x;
-          const dy = tgt.y - src.y;
-          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          const target = 100;
-          const f = (dist - target) / dist * 0.03;
-          src.vx += dx * f;
-          src.vy += dy * f;
-          tgt.vx -= dx * f;
-          tgt.vy -= dy * f;
+          const dx = tgt.x - src.x, dy = tgt.y - src.y;
+          const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+          const target = 120;
+          const f = (dist - target) / dist * 0.025;
+          src.vx += dx*f; src.vy += dy*f;
+          tgt.vx -= dx*f; tgt.vy -= dy*f;
         });
-
-        // Damping
-        n.vx *= 0.85;
-        n.vy *= 0.85;
-        n.x += n.vx;
-        n.y += n.vy;
-
-        // Boundary
-        n.x = Math.max(30, Math.min(W - 30, n.x));
-        n.y = Math.max(30, Math.min(H - 30, n.y));
+        n.vx *= 0.82; n.vy *= 0.82;
+        n.x  = Math.max(40, Math.min(W - 40, n.x + n.vx));
+        n.y  = Math.max(40, Math.min(H - 40, n.y + n.vy));
       }
 
-      // Draw
-      const ctx = canvas.getContext('2d');
+      /* draw */
       ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#090505'; ctx.fillRect(0, 0, W, H);
 
-      // Background
-      ctx.fillStyle = '#090505';
-      ctx.fillRect(0, 0, W, H);
+      // Subtle grid
+      ctx.strokeStyle = 'rgba(255,255,255,0.025)'; ctx.lineWidth = 1;
+      for (let gx = 0; gx < W; gx += 60) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
+      for (let gy = 0; gy < H; gy += 60) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
 
-      // Links
-      graphData.links.forEach(link => {
-        const src = nodes.find(n => n.id === link.source);
-        const tgt = nodes.find(n => n.id === link.target);
+      // Vines / links
+      links.forEach(lk => {
+        const src = nodes.find(n => n.id === lk.source);
+        const tgt = nodes.find(n => n.id === lk.target);
         if (!src || !tgt) return;
-        ctx.beginPath();
-        ctx.moveTo(src.x, src.y);
-        ctx.lineTo(tgt.x, tgt.y);
-        ctx.strokeStyle = 'rgba(163,88,88,0.2)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
+        const sc = SENTIMENT_COLORS[tgt.sentiment] || SENTIMENT_COLORS.neutral;
+        drawVine(ctx, src.x, src.y, tgt.x, tgt.y, sc.fill);
       });
 
       // Nodes
-      const now = Date.now();
       nodes.forEach(node => {
-        const color = SENTIMENT_COLORS[node.sentiment] || '#635858';
-        const size = (node.size || 10) * (node.type === 'category' ? 1.4 : 1);
-        const pulse = 1 + Math.sin(now / 1000 + node.x) * 0.08;
+        const isSelected = selectedNode?.id === node.id;
+        const isHovered  = hoveredNode?.id  === node.id;
+        const sc = SENTIMENT_COLORS[node.sentiment] || SENTIMENT_COLORS.neutral;
+        const cat = CATEGORY_META[node.category] || {};
 
-        // Glow
-        const grd = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, size * 2.5 * pulse);
-        grd.addColorStop(0, color + '55');
-        grd.addColorStop(1, 'transparent');
-        ctx.fillStyle = grd;
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, size * 2.5 * pulse, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Node circle
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, size * pulse, 0, Math.PI * 2);
-        ctx.fillStyle = node === selectedNode ? '#F2F0F0' : color;
-        ctx.fill();
         if (node.type === 'category') {
-          ctx.strokeStyle = color + 'aa';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-        }
+          const color = cat.color || '#A49898';
+          drawHub(ctx, node.x, node.y, (node.size || 18) * (isHovered ? 1.3 : 1), color, node.label || '', t);
+        } else {
+          const petals = node.category === 'feeling' ? 8 : node.category === 'person' ? 5 : 6;
+          const r = (node.size || 9) * (isSelected ? 1.5 : isHovered ? 1.3 : 1);
+          drawFlower(ctx, node.x, node.y, r, sc.fill, sc.glow, petals, t);
 
-        // Label
-        ctx.fillStyle = 'rgba(242,240,240,0.7)';
-        ctx.font = node.type === 'category' ? '11px Outfit, sans-serif' : '9px Manrope, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(node.label?.slice(0, 18) || '', node.x, node.y + size * pulse + 12);
+          // Selection ring
+          if (isSelected) {
+            ctx.beginPath(); ctx.arc(node.x, node.y, r * 2.2, 0, Math.PI * 2);
+            ctx.strokeStyle = sc.fill + 'aa'; ctx.lineWidth = 2; ctx.stroke();
+          }
+
+          // Label on hover / selected
+          if (isHovered || isSelected) {
+            const label = node.label || '';
+            ctx.font = '10px Manrope, sans-serif';
+            const tw = ctx.measureText(label).width;
+            ctx.fillStyle = 'rgba(9,5,5,0.85)';
+            ctx.beginPath();
+            ctx.roundRect(node.x - tw/2 - 6, node.y + r * 2.4, tw + 12, 18, 4);
+            ctx.fill();
+            ctx.fillStyle = '#F2F0F0';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, node.x, node.y + r * 2.4 + 13);
+          }
+        }
       });
+
+      // Floating count badge top-right of canvas
+      ctx.font = '11px Manrope, sans-serif';
+      ctx.fillStyle = 'rgba(242,240,240,0.2)';
+      ctx.textAlign = 'right';
+      ctx.fillText(`${nodes.filter(n => n.type !== 'category').length} memories`, W - 12, 20);
 
       animRef.current = requestAnimationFrame(simulate);
     };
 
     animRef.current = requestAnimationFrame(simulate);
     return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
-  }, [graphData, selectedNode]);
+  }, [graphData, selectedNode, hoveredNode]);
 
-  // Canvas click handler
-  const handleCanvasClick = useCallback((e) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const hit = nodesRef.current.find(n => {
-      const dx = n.x - x;
-      const dy = n.y - y;
-      return Math.sqrt(dx * dx + dy * dy) < (n.size || 10) * 2;
-    });
-    setSelectedNode(hit || null);
+  /* ── canvas interaction ── */
+  const getNodeAtPoint = useCallback((x, y) => {
+    return nodesRef.current.find(n => {
+      const dx = n.x - x, dy = n.y - y;
+      const r = (n.size || 9) * 2.5;
+      return Math.sqrt(dx*dx + dy*dy) < r;
+    }) || null;
   }, []);
 
+  const handleCanvasClick = useCallback(e => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const hit = getNodeAtPoint(e.clientX - rect.left, e.clientY - rect.top);
+    setSelectedNode(hit?.type !== 'category' ? hit : null);
+  }, [getNodeAtPoint]);
+
+  const handleCanvasMove = useCallback(e => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const hit = getNodeAtPoint(e.clientX - rect.left, e.clientY - rect.top);
+    setHoveredNode(hit);
+    if (canvasRef.current) canvasRef.current.style.cursor = hit ? 'pointer' : 'default';
+  }, [getNodeAtPoint]);
+
+  /* ── actions ── */
   const generateInnerLife = useCallback(async () => {
     setIsGenerating(true);
     try {
       await axios.post(`${API}/inner-life/${sessionId}`);
       toast.success('Sam reflected...');
-      await fetchGraph();
-    } catch (e) {
-      toast.error('Reflection failed');
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [sessionId, fetchGraph]);
+      await fetchData();
+    } catch { toast.error('Reflection failed'); }
+    finally { setIsGenerating(false); }
+  }, [sessionId, fetchData]);
 
   const summarizeGarden = useCallback(async () => {
-    setIsSummarizing(true);
-    setSummary(null);
+    setIsSummarizing(true); setSummary(null);
     try {
       const res = await axios.get(`${API}/memories/${sessionId}/summary`);
       setSummary(res.data);
-    } catch (e) {
-      toast.error('Summary failed');
-    } finally {
-      setIsSummarizing(false);
-    }
+    } catch { toast.error('Summary failed'); }
+    finally { setIsSummarizing(false); }
   }, [sessionId]);
 
   const playSummaryAudio = useCallback(async () => {
     if (!summary?.summary) return;
-    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; setIsPlayingAudio(false); return; }
+    if (audioRef.current) {
+      audioRef.current.pause(); audioRef.current = null; setIsPlayingAudio(false); return;
+    }
     setIsPlayingAudio(true);
     try {
       const res = await axios.post(`${API}/tts`,
@@ -254,188 +351,277 @@ export default function MemoryGarden({ sessionId }) {
       audio.onended = () => { setIsPlayingAudio(false); audioRef.current = null; URL.revokeObjectURL(url); };
       audio.onerror = () => { setIsPlayingAudio(false); audioRef.current = null; };
       await audio.play();
-    } catch (e) {
-      setIsPlayingAudio(false);
-      toast.error('Voice playback failed');
-    }
+    } catch { setIsPlayingAudio(false); toast.error('Voice playback failed'); }
   }, [summary, sessionId]);
 
   return (
-    <div className="relative w-full h-full flex flex-col overflow-hidden" style={{ background: 'var(--color-bg)', paddingTop: '64px' }}>
-      {/* Header */}
-      <div className="flex items-center justify-between px-8 py-4 flex-shrink-0">
-        <div>
-          <h2 className="text-xl font-semibold" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
-            Memory Garden
-          </h2>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-faint)' }}>
-            {graphData.nodes.length} memories blooming
-          </p>
+    <div className="w-full h-full flex flex-col overflow-hidden" style={{ background: 'var(--color-bg)', paddingTop: '64px' }}>
+
+      {/* ── Top bar ── */}
+      <div className="flex-shrink-0 flex items-center justify-between px-6 py-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
+        <div className="flex items-center gap-4">
+          <div>
+            <h2 className="text-lg font-semibold" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
+              Memory Garden
+            </h2>
+            <p className="text-xs" style={{ color: 'var(--color-text-faint)' }}>
+              {stats.total} memories · {Object.keys(stats.byCat).length} categories
+            </p>
+          </div>
+
+          {/* Category pill filters */}
+          <div className="hidden md:flex items-center gap-1.5">
+            <FilterPill label="All" active={filterCat === 'all'} onClick={() => setFilterCat('all')} />
+            {Object.entries(CATEGORY_META).map(([k, v]) => (
+              stats.byCat[k] ? (
+                <FilterPill key={k} label={`${v.symbol} ${v.label}`} count={stats.byCat[k]}
+                  active={filterCat === k} color={v.color} onClick={() => setFilterCat(filterCat === k ? 'all' : k)} />
+              ) : null
+            ))}
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            data-testid="summarize-garden-btn"
-            onClick={summarizeGarden}
-            disabled={isSummarizing}
-            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm glass-panel transition-colors duration-200"
-            style={{ color: isSummarizing ? '#635858' : '#F2F0F0', fontFamily: 'Manrope, sans-serif' }}
-          >
+
+        <div className="flex items-center gap-2">
+          <button data-testid="summarize-garden-btn" onClick={summarizeGarden} disabled={isSummarizing}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all duration-200"
+            style={{ background: 'rgba(255,255,255,0.04)', color: isSummarizing ? '#635858' : '#F2F0F0', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'Manrope, sans-serif' }}>
             <BookOpen size={14} />
             {isSummarizing ? 'Reflecting...' : 'What do you remember?'}
           </button>
-          <button
-            data-testid="generate-reflection-btn"
-            onClick={generateInnerLife}
-            disabled={isGenerating}
-            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm glass-panel transition-colors duration-200"
-            style={{ color: isGenerating ? '#635858' : '#E8927C', fontFamily: 'Manrope, sans-serif' }}
-          >
+          <button data-testid="generate-reflection-btn" onClick={generateInnerLife} disabled={isGenerating}
+            className="flex items-center gap-2 px-3 py-2 rounded-full text-sm transition-all duration-200"
+            style={{ background: 'rgba(232,146,124,0.08)', color: isGenerating ? '#635858' : '#E8927C', border: '1px solid rgba(232,146,124,0.15)', fontFamily: 'Manrope, sans-serif' }}>
             <Plus size={14} />
-            {isGenerating ? 'Reflecting...' : 'Inner Life'}
+            {isGenerating ? '...' : 'Inner Life'}
           </button>
-          <button
-            data-testid="refresh-garden-btn"
-            onClick={fetchGraph}
-            disabled={isLoading}
-            className="p-2 rounded-full glass-panel transition-colors duration-200"
-            style={{ color: isLoading ? '#635858' : '#A49898' }}
-          >
-            <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
+          <button data-testid="refresh-garden-btn" onClick={fetchData} disabled={isLoading}
+            className="p-2 rounded-full transition-colors duration-200"
+            style={{ color: isLoading ? '#635858' : '#A49898', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
           </button>
         </div>
       </div>
 
-      {/* Summary panel */}
+      {/* ── Sam summary panel ── */}
       {(summary || isSummarizing) && (
-        <div
-          data-testid="garden-summary-panel"
-          className="mx-4 mb-3 glass-panel rounded-2xl px-6 py-4 message-enter flex items-start gap-4"
-        >
+        <div data-testid="garden-summary-panel"
+          className="flex-shrink-0 mx-4 mt-3 glass-panel rounded-xl px-5 py-4 message-enter flex items-start gap-4">
           {isSummarizing ? (
-            <div className="flex items-center gap-3 w-full">
-              <div className="flex items-center gap-1.5">
-                <div className="typing-dot" />
-                <div className="typing-dot" />
-                <div className="typing-dot" />
-              </div>
-              <span className="text-sm" style={{ color: 'var(--color-text-faint)', fontFamily: 'Manrope, sans-serif' }}>
-                Sam is looking through her garden...
-              </span>
+            <div className="flex items-center gap-3">
+              <div className="flex gap-1.5"><div className="typing-dot"/><div className="typing-dot"/><div className="typing-dot"/></div>
+              <span className="text-sm" style={{ color: 'var(--color-text-faint)', fontFamily: 'Manrope, sans-serif' }}>Sam is looking through her garden...</span>
             </div>
-          ) : summary && (
-            <>
-              <div
-                className="w-8 h-8 rounded-full flex-shrink-0 mt-0.5"
-                style={{ background: 'radial-gradient(circle, #E8927C, #C8102E)', boxShadow: '0 0 12px rgba(200,16,46,0.3)' }}
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-xs uppercase tracking-widest" style={{ color: 'var(--color-text-faint)', fontFamily: 'Manrope, sans-serif' }}>
-                    Sam — {summary.memory_count} memories
+          ) : summary && (<>
+            <div className="w-7 h-7 rounded-full flex-shrink-0 mt-0.5"
+              style={{ background: 'radial-gradient(circle, #E8927C, #C8102E)', boxShadow: '0 0 12px rgba(200,16,46,0.35)' }} />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs uppercase tracking-widest" style={{ color: 'var(--color-text-faint)', fontFamily: 'Manrope, sans-serif' }}>
+                  sam · {summary.memory_count} memories
+                </span>
+                {(summary.categories || []).map(c => (
+                  <span key={c} className="text-xs px-1.5 py-0.5 rounded-full"
+                    style={{ background: 'rgba(255,255,255,0.05)', color: CATEGORY_META[c]?.color || '#635858', fontFamily: 'Manrope, sans-serif' }}>
+                    {CATEGORY_META[c]?.symbol} {c}
                   </span>
-                  {summary.categories?.map(c => (
-                    <span key={c} className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.04)', color: '#635858', fontFamily: 'Manrope, sans-serif' }}>
-                      {c}
-                    </span>
-                  ))}
-                </div>
-                <p className="text-sm leading-relaxed" style={{ color: '#F2F0F0', fontFamily: 'Manrope, sans-serif' }}>
-                  {summary.summary}
-                </p>
+                ))}
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <button
-                  data-testid="play-summary-audio-btn"
-                  onClick={playSummaryAudio}
-                  className="p-1.5 rounded-full transition-colors duration-200"
-                  style={{ color: isPlayingAudio ? '#E8927C' : '#635858' }}
-                  title={isPlayingAudio ? 'Stop' : 'Hear Sam say this'}
-                >
-                  <Volume2 size={15} />
-                </button>
-                <button
-                  data-testid="close-summary-btn"
-                  onClick={() => { setSummary(null); if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; setIsPlayingAudio(false); } }}
-                  className="p-1.5 rounded-full transition-colors duration-200"
-                  style={{ color: '#635858' }}
-                >
-                  <X size={15} />
-                </button>
-              </div>
-            </>
-          )}
+              <p className="text-sm leading-relaxed" style={{ color: '#F2F0F0', fontFamily: 'Manrope, sans-serif' }}>{summary.summary}</p>
+            </div>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <button data-testid="play-summary-audio-btn" onClick={playSummaryAudio}
+                className="p-1.5 rounded-full transition-colors duration-200"
+                style={{ color: isPlayingAudio ? '#E8927C' : '#635858' }} title="Hear Sam say this">
+                <Volume2 size={14} />
+              </button>
+              <button data-testid="close-summary-btn"
+                onClick={() => { setSummary(null); audioRef.current?.pause(); audioRef.current = null; setIsPlayingAudio(false); }}
+                className="p-1.5 rounded-full" style={{ color: '#635858' }}>
+                <X size={14} />
+              </button>
+            </div>
+          </>)}
         </div>
       )}
 
-      {/* Canvas */}
-      <div className="relative flex-1 mx-4 mb-4 rounded-2xl overflow-hidden glass-panel">
-        {graphData.nodes.length === 0 && !isLoading ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ color: 'var(--color-text-muted)' }}>
-            <div className="text-4xl mb-4" style={{ color: '#635858' }}>◎</div>
-            <p className="text-sm" style={{ fontFamily: 'Manrope, sans-serif' }}>
-              Start a conversation to grow your memory garden
-            </p>
-          </div>
-        ) : (
-          <canvas
-            data-testid="memory-canvas"
-            ref={canvasRef}
-            style={{ width: '100%', height: '100%', display: 'block' }}
-            width={1200}
-            height={700}
-            onClick={handleCanvasClick}
-          />
-        )}
+      {/* ── Main body: canvas + sidebar ── */}
+      <div className="flex-1 flex overflow-hidden gap-0 min-h-0">
 
-        {/* Selected node info */}
-        {selectedNode && (
-          <div
-            data-testid="selected-node-info"
-            className="absolute bottom-4 left-4 right-4 glass-panel rounded-xl p-4"
-            style={{ maxWidth: 400 }}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span style={{ color: SENTIMENT_COLORS[selectedNode.sentiment] || '#635858' }}>
-                    {CATEGORY_SHAPES[selectedNode.category] || '●'}
-                  </span>
-                  <span className="text-xs uppercase tracking-widest" style={{ color: 'var(--color-text-faint)' }}>
-                    {selectedNode.category || selectedNode.type}
-                  </span>
-                </div>
-                <p className="text-sm" style={{ color: '#F2F0F0', fontFamily: 'Manrope, sans-serif' }}>
-                  {selectedNode.label}
-                </p>
-                {selectedNode.timestamp && (
-                  <p className="text-xs mt-1" style={{ color: 'var(--color-text-faint)' }}>
-                    {new Date(selectedNode.timestamp).toLocaleDateString()}
-                  </p>
-                )}
-              </div>
-              <button
-                onClick={() => setSelectedNode(null)}
-                className="text-sm"
-                style={{ color: 'var(--color-text-faint)' }}
-              >
-                ×
-              </button>
+        {/* Canvas */}
+        <div className="relative flex-1 min-w-0 m-3 mr-0 rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.05)' }}>
+          {memories.length === 0 && !isLoading ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ background: '#090505' }}>
+              <div className="text-5xl mb-4" style={{ color: '#2a1818' }}>◎</div>
+              <p className="text-sm" style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>
+                start a conversation — every memory blooms here
+              </p>
             </div>
-          </div>
-        )}
-      </div>
+          ) : (
+            <canvas
+              data-testid="memory-canvas"
+              ref={canvasRef}
+              className="w-full h-full block"
+              onClick={handleCanvasClick}
+              onMouseMove={handleCanvasMove}
+              onMouseLeave={() => setHoveredNode(null)}
+            />
+          )}
 
-      {/* Legend */}
-      <div className="flex items-center justify-center gap-6 pb-4 flex-shrink-0">
-        {Object.entries(SENTIMENT_COLORS).map(([sentiment, color]) => (
-          <div key={sentiment} className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full" style={{ background: color }} />
-            <span className="text-xs" style={{ color: 'var(--color-text-faint)', fontFamily: 'Manrope, sans-serif' }}>
-              {sentiment}
-            </span>
+          {/* Selected node detail card */}
+          {selectedNode && (
+            <div data-testid="selected-node-info"
+              className="absolute bottom-4 left-4 glass-panel rounded-xl p-4 message-enter"
+              style={{ maxWidth: 320, minWidth: 220 }}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span style={{ color: SENTIMENT_COLORS[selectedNode.sentiment]?.fill || '#635858', fontSize: 12 }}>
+                      {CATEGORY_META[selectedNode.category]?.symbol || '●'}
+                    </span>
+                    <span className="text-xs uppercase tracking-widest" style={{ color: 'var(--color-text-faint)', fontFamily: 'Manrope, sans-serif' }}>
+                      {selectedNode.category} · {selectedNode.sentiment}
+                    </span>
+                  </div>
+                  <p className="text-sm leading-relaxed" style={{ color: '#F2F0F0', fontFamily: 'Manrope, sans-serif' }}>
+                    {selectedNode.full_content || selectedNode.label}
+                  </p>
+                  {selectedNode.timestamp && (
+                    <p className="text-xs mt-2" style={{ color: 'var(--color-text-faint)' }}>
+                      {new Date(selectedNode.timestamp).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </p>
+                  )}
+                </div>
+                <button onClick={() => setSelectedNode(null)} style={{ color: '#635858', flexShrink: 0 }}>
+                  <X size={14} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Sentiment legend — bottom right of canvas */}
+          <div className="absolute bottom-4 right-4 flex flex-col gap-1.5">
+            {Object.entries(SENTIMENT_COLORS).map(([s, c]) =>
+              stats.bySent[s] ? (
+                <button key={s}
+                  onClick={() => setFilterSentiment(filterSentiment === s ? 'all' : s)}
+                  className="flex items-center gap-1.5 text-xs transition-opacity duration-200"
+                  style={{ opacity: filterSentiment !== 'all' && filterSentiment !== s ? 0.3 : 1 }}>
+                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: c.fill, boxShadow: `0 0 5px ${c.fill}` }} />
+                  <span style={{ color: '#635858', fontFamily: 'Manrope, sans-serif' }}>{s}</span>
+                  <span style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>({stats.bySent[s]})</span>
+                </button>
+              ) : null
+            )}
           </div>
-        ))}
+        </div>
+
+        {/* ── Right sidebar ── */}
+        <div className="flex-shrink-0 flex flex-col overflow-hidden m-3 ml-2 rounded-2xl glass-panel"
+          style={{ width: sidebarOpen ? 280 : 36, transition: 'width 0.3s ease', border: '1px solid rgba(255,255,255,0.05)' }}>
+
+          {/* Sidebar toggle */}
+          <button onClick={() => setSidebarOpen(v => !v)}
+            className="flex items-center justify-between px-3 py-3 flex-shrink-0 transition-colors duration-200"
+            style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#635858' }}>
+            {sidebarOpen && <span className="text-xs uppercase tracking-widest" style={{ fontFamily: 'Manrope, sans-serif', color: '#635858' }}>Memories</span>}
+            <ChevronDown size={14} style={{ transform: sidebarOpen ? 'rotate(-90deg)' : 'rotate(90deg)', transition: 'transform 0.3s' }} />
+          </button>
+
+          {sidebarOpen && (<>
+            {/* Search */}
+            <div className="px-3 pt-3 pb-2 flex-shrink-0">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <Search size={12} style={{ color: '#635858', flexShrink: 0 }} />
+                <input
+                  data-testid="memory-search-input"
+                  type="text"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  placeholder="search memories..."
+                  className="bg-transparent outline-none w-full"
+                  style={{ fontSize: 12, color: '#F2F0F0', fontFamily: 'Manrope, sans-serif' }}
+                />
+                {searchTerm && <button onClick={() => setSearchTerm('')}><X size={10} style={{ color: '#635858' }} /></button>}
+              </div>
+            </div>
+
+            {/* Stats bars */}
+            <div className="px-3 pb-3 flex-shrink-0">
+              <div className="space-y-1.5">
+                {Object.entries(CATEGORY_META).map(([k, v]) => {
+                  const count = stats.byCat[k] || 0;
+                  if (!count) return null;
+                  const pct = stats.total ? (count / stats.total) * 100 : 0;
+                  return (
+                    <div key={k} className="flex items-center gap-2">
+                      <span style={{ color: v.color, fontSize: 10, width: 10, flexShrink: 0 }}>{v.symbol}</span>
+                      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                        <div className="h-full rounded-full transition-all duration-700"
+                          style={{ width: `${pct}%`, background: v.color, opacity: 0.7 }} />
+                      </div>
+                      <span style={{ color: '#3a2828', fontSize: 10, fontFamily: 'Manrope, sans-serif', minWidth: 16, textAlign: 'right' }}>{count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Memory list */}
+            <div className="flex-1 overflow-y-auto px-2 pb-3 space-y-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+              {filteredMemories.length === 0 ? (
+                <p className="text-xs text-center pt-6" style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>
+                  {searchTerm ? 'no matches' : 'no memories yet'}
+                </p>
+              ) : filteredMemories.map(mem => (
+                <button key={mem.id}
+                  data-testid="memory-list-item"
+                  onClick={() => {
+                    const node = nodesRef.current.find(n => n.id === mem.id);
+                    setSelectedNode(node || null);
+                  }}
+                  className="w-full text-left p-2.5 rounded-lg transition-colors duration-150 group"
+                  style={{
+                    background: selectedNode?.id === mem.id ? 'rgba(200,16,46,0.1)' : 'rgba(255,255,255,0.02)',
+                    border: `1px solid ${selectedNode?.id === mem.id ? 'rgba(200,16,46,0.2)' : 'rgba(255,255,255,0.04)'}`,
+                    marginTop: '6px'
+                  }}>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span style={{ color: CATEGORY_META[mem.category]?.color || '#635858', fontSize: 9 }}>
+                      {CATEGORY_META[mem.category]?.symbol}
+                    </span>
+                    <div className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                      style={{ background: SENTIMENT_COLORS[mem.sentiment]?.fill || '#635858' }} />
+                    <span className="text-xs" style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>
+                      {new Date(mem.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </span>
+                  </div>
+                  <p className="text-xs leading-relaxed line-clamp-2"
+                    style={{ color: selectedNode?.id === mem.id ? '#F2F0F0' : '#7a6060', fontFamily: 'Manrope, sans-serif' }}>
+                    {mem.content}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </>)}
+        </div>
       </div>
     </div>
+  );
+}
+
+/* ── Helper components ── */
+function FilterPill({ label, count, active, color, onClick }) {
+  return (
+    <button onClick={onClick}
+      className="flex items-center gap-1 px-3 py-1 rounded-full text-xs transition-all duration-200"
+      style={{
+        background: active ? (color ? `${color}18` : 'rgba(200,16,46,0.15)') : 'rgba(255,255,255,0.03)',
+        color: active ? (color || '#E8927C') : '#635858',
+        border: `1px solid ${active ? (color ? color + '40' : 'rgba(200,16,46,0.3)') : 'rgba(255,255,255,0.06)'}`,
+        fontFamily: 'Manrope, sans-serif'
+      }}>
+      {label}
+      {count !== undefined && <span style={{ color: active ? (color || '#E8927C') : '#3a2828' }}>({count})</span>}
+    </button>
   );
 }
