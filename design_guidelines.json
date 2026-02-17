@@ -1,0 +1,181 @@
+{
+  "identity": {
+    "name": "Sam",
+    "archetype": "The Intimate Companion",
+    "mood": "Cinematic, Warm, Emotional, Alive, Retro-Future",
+    "core_metaphor": "A living operating system that feels",
+    "design_principle": "Technology that feels like a sunset, not a spreadsheet."
+  },
+  "typography": {
+    "font_family": {
+      "headings": "Outfit, sans-serif",
+      "body": "Manrope, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "weights": {
+      "headings": "600",
+      "body": "400",
+      "emphasis": "500"
+    },
+    "scale": {
+      "h1": "text-5xl md:text-7xl tracking-tighter leading-tight",
+      "h2": "text-4xl md:text-5xl tracking-tight leading-tight",
+      "h3": "text-2xl md:text-3xl tracking-tight",
+      "body_lg": "text-lg md:text-xl leading-relaxed",
+      "body": "text-base leading-relaxed",
+      "caption": "text-sm text-muted-foreground uppercase tracking-widest"
+    },
+    "installation_command": "npm install @fontsource/outfit @fontsource/manrope @fontsource/jetbrains-mono"
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "DEFAULT": "#C8102E",
+        "foreground": "#FFFFFF",
+        "description": "Samantha Red - Passionate, Deep, Alive"
+      },
+      "secondary": {
+        "DEFAULT": "#E8927C",
+        "foreground": "#0F0505",
+        "description": "Skin Tone/Peach - Warmth, Intimacy"
+      },
+      "accent": {
+        "DEFAULT": "#F0A500",
+        "foreground": "#0F0505",
+        "description": "Golden Hour - Thinking, Processing"
+      },
+      "background": {
+        "DEFAULT": "#090505",
+        "layer_1": "#120808",
+        "layer_2": "#1A0B0B",
+        "description": "Void Warmth - Not pure black, but deep warm charcoal/brown"
+      },
+      "text": {
+        "primary": "#F2F0F0",
+        "secondary": "#A49898",
+        "muted": "#635858"
+      },
+      "status": {
+        "success": "#34D399",
+        "error": "#FF4F4F",
+        "warning": "#F59E0B",
+        "info": "#60A5FA"
+      }
+    },
+    "gradients": {
+      "orb_idle": "linear-gradient(to bottom right, #C8102E, #E8927C)",
+      "orb_speaking": "radial-gradient(circle, #E8927C 0%, #C8102E 100%)",
+      "background_glow": "radial-gradient(circle at 50% 50%, rgba(200, 16, 46, 0.15) 0%, rgba(9, 5, 5, 0) 70%)"
+    },
+    "forbidden_colors": ["#7351B7", "#1B93A4", "#000000"]
+  },
+  "visual_enhancers": {
+    "glassmorphism": {
+      "panel": "bg-[#1A0B0B]/60 backdrop-blur-xl border border-white/5 shadow-2xl",
+      "overlay": "bg-black/40 backdrop-blur-md"
+    },
+    "borders": {
+      "subtle": "border-white/5",
+      "highlight": "border-white/10"
+    },
+    "shadows": {
+      "glow": "0 0 40px -10px rgba(200, 16, 46, 0.3)",
+      "ambient": "0 20px 40px -20px rgba(0,0,0,0.5)"
+    },
+    "textures": {
+      "noise": "url('/assets/noise.png') opacity-5",
+      "light_leak": "Use image_urls.textures.light_leak with mix-blend-mode: screen"
+    }
+  },
+  "components": {
+    "Orb": {
+      "path": "src/components/orb/OrbCanvas.jsx",
+      "library": "react-three-fiber",
+      "description": "The Hero. A 3D sphere with custom shader material using Perlin noise for displacement (breathing) and Fresnel effect for rim glow.",
+      "states": {
+        "IDLE": "Slow, rhythmic breathing (0.5x speed). Color: Deep Red/Peach mix.",
+        "LISTENING": "Ripples on surface, slightly larger scale. Color: Bright Peach.",
+        "SPEAKING": "Rapid expansion/contraction matching audio amplitude. Color: Intense Pink/Red.",
+        "THINKING": "Fast internal rotation, golden particles orbiting. Color: Gold accent."
+      }
+    },
+    "ChatInterface": {
+      "path": "src/components/chat/ChatInterface.jsx",
+      "style": "Minimalist. No visible 'bubbles' by default. Text floats in space. User text right (muted), Sam text left (bright).",
+      "animation": "Fade in + Slide up. Staggered reveal for long responses."
+    },
+    "VoiceInput": {
+      "path": "src/components/voice/VoiceControls.jsx",
+      "trigger": "Spacebar (Hold to talk)",
+      "visual": "When holding space, the Orb scales up and screen edges vignette."
+    },
+    "MemoryGarden": {
+      "path": "src/components/garden/MemoryGraph.jsx",
+      "library": "react-force-graph-3d",
+      "style": "Dark void background. Nodes are glowing flowers/stars. Edges are faint neural connections.",
+      "node_colors": "Sentiments: Red (Love), Blue (Sadness), Gold (Joy)."
+    }
+  },
+  "layout_strategy": {
+    "global": "100vh height, hidden overflow. Everything is immersive.",
+    "grid": "CSS Grid. 12 columns. Orb takes center stage (col-span-12 or col-span-6 depending on view).",
+    "spacing": "Relaxed. p-8 to p-12 minimum for containers.",
+    "z_index": {
+      "background": 0,
+      "particles": 10,
+      "orb": 20,
+      "ui_layer": 30,
+      "overlays": 40,
+      "cursor": 50
+    }
+  },
+  "motion": {
+    "libraries": ["framer-motion", "react-spring", "@react-three/fiber"],
+    "principles": {
+      "physics": "Fluid, underwater-like resistance. No linear ease.",
+      "transitions": "Long durations (0.5s - 1s). Dissolve and Drift.",
+      "hover": "Scale 1.05, Glow intensity increase."
+    }
+  },
+  "image_urls": {
+    "textures": {
+      "light_leak": "https://images.unsplash.com/photo-1761027612556-cb088808a624?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "bokeh": "https://images.unsplash.com/photo-1760172287477-dd3f2a9402e8?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "floral_blur": "https://images.unsplash.com/photo-1760378231962-355ec4bc2a02?crop=entropy&cs=srgb&fm=jpg&q=85"
+    },
+    "placeholders": {
+      "user_avatar": "https://images.unsplash.com/photo-1758590777089-386c49a45f7a?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "generic_portrait": "https://images.unsplash.com/photo-1770896686915-140095250023?crop=entropy&cs=srgb&fm=jpg&q=85"
+    }
+  },
+  "libraries_to_install": [
+    "lucide-react",
+    "framer-motion",
+    "three",
+    "@react-three/fiber",
+    "@react-three/drei",
+    "lamina", 
+    "react-force-graph-3d",
+    "tsparticles",
+    "clsx",
+    "tailwind-merge"
+  ],
+  "instructions_to_main_agent": [
+    "1. Setup: Install all libraries first.",
+    "2. Theme: Apply the 'colors.palette.background.DEFAULT' to the global body immediately. NO WHITE BACKGROUNDS.",
+    "3. Orb: Build the 'OrbCanvas' first. It is the heart of the app. It must be visible on the home screen immediately.",
+    "4. Audio: Use the Web Audio API for the 'listening' state. Visuals must react to audio amplitude.",
+    "5. Chat: Do not use standard 'chat bubbles'. Use floating text with varying opacity to indicate age of message.",
+    "6. Memory Garden: This is a separate page/view. Use a force-directed graph where nodes are 'memories'.",
+    "7. Admin: Use Shadcn components here, but style them with the 'glassmorphism.panel' styles.",
+    "8. Universal: Add 'data-testid' to every interactive element."
+  ],
+  "universal_guidelines": [
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur).",
+    "You MUST NOT apply universal transition (transition: all).",
+    "Every interaction needs micro-animations.",
+    "Use 2-3x more spacing than feels comfortable."
+  ]
+}
