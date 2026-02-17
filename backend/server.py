@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
 ELEVENLABS_API_KEY = os.environ.get('ELEVENLABS_API_KEY')
+SUPERMEMORY_API_KEY = os.environ.get('SUPERMEMORY_API_KEY')
 
 # ─────────────────────────────────────────────────────────────
 #  ELEVENLABS VOICE CONFIG — direct HTTP (avoids SDK proxy issues)
@@ -34,6 +35,12 @@ ELEVENLABS_API_KEY = os.environ.get('ELEVENLABS_API_KEY')
 # ─────────────────────────────────────────────────────────────
 SAMANTHA_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"
 ELEVENLABS_BASE = "https://api.elevenlabs.io/v1"
+
+# ─────────────────────────────────────────────────────────────
+#  SUPERMEMORY CLIENT — eternal knowledge graph
+# ─────────────────────────────────────────────────────────────
+sm_client = Supermemory(api_key=SUPERMEMORY_API_KEY) if SUPERMEMORY_API_KEY else None
+SM_CONTAINER = "user-sam"  # shared knowledge graph container
 
 # ─────────────────────────────────────────────────────────────
 #  SAM'S SOUL — the complete personality system prompt
