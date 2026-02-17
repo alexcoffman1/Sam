@@ -9,8 +9,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Dict
 from emergentintegrations.llm.chat import LlmChat, UserMessage
-from elevenlabs.client import AsyncElevenLabs
-from elevenlabs import VoiceSettings
+import httpx
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
