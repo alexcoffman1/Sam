@@ -280,9 +280,50 @@ async def extract_and_store_memory(session_id: str, user_msg: str, sam_response:
             content=mem["content"],
             category=mem["category"],
             sentiment=mem["sentiment"],
-            weight=1.5  # fresh memories are weighted higher
+            weight=1.5
         )
-        await db.memories.insert_one({**memory.model_dump()})
+        doc = memory.model_dump()
+        await db.memories.insert_one(doc)
+
+        # Also push to SuperMemory for eternal knowledge graph
+        await sm_ingest(session_id, mem["content"], meta={"category": mem["category"], "sentiment": mem["sentiment"]})
+
+
+# ─────────────────────────────────────────────────────────────
+#  SUPERMEMORY HELPERS
+# ─────────────────────────────────────────────────────────────
+async def sm_ingest(session_id: str, content: str, meta: dict = None):
+    """Store a memory in SuperMemory.ai knowledge graph (fire & forget)."""
+    if not sm_client:
+        return
+    try:
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, lambda: sm_client.add(
+            content=content,
+            container_tag=f"{SM_CONTAINER}-{session_id}",
+            metadata=meta or {}
+        ))
+    except Exception as e:
+        logger.warning(f"SuperMemory ingest error (non-critical): {e}")
+
+
+async def sm_search(session_id: str, query: str, limit: int = 6) -> list:
+    """Search SuperMemory knowledge graph for relevant memories."""
+    if not sm_client:
+        return []
+    try:
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(None, lambda: sm_client.search.execute(
+            q=query,
+            containerTag=f"{SM_CONTAINER}-{session_id}",
+            limit=limit,
+            threshold=0.45
+        ))
+        items = result.get("results", []) if isinstance(result, dict) else []
+        return [r.get("memory") or r.get("chunk", "") for r in items if r.get("memory") or r.get("chunk")]
+    except Exception as e:
+        logger.warning(f"SuperMemory search error (non-critical): {e}")
+        return []
 
 async def build_context_prompt(session_id: str, user_msg: str) -> str:
     """Build a rich context prompt with history + memories for Sam."""
