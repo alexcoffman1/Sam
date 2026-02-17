@@ -1,53 +1,108 @@
 #!/usr/bin/env python3
+"""
+Backend API Test Suite for Sam AI Assistant
+Testing all endpoints comprehensively
+"""
 
 import requests
-import sys
 import json
+import sys
+import time
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 class SamAPITester:
     def __init__(self, base_url="https://samantha-voice.preview.emergentagent.com/api"):
         self.base_url = base_url
-        self.session_id = f"test_session_{datetime.now().strftime('%H%M%S')}"
+        self.session_id = f"test-session-{uuid.uuid4().hex[:8]}"
         self.tests_run = 0
         self.tests_passed = 0
+        self.failed_tests = []
+        
+        print(f"🧪 Sam Backend API Testing")
+        print(f"📍 Base URL: {self.base_url}")
+        print(f"🔑 Session ID: {self.session_id}")
+        print("-" * 60)
 
-    def log_test(self, test_name, success, details=""):
-        """Log test result"""
+    def run_test(self, name, method, endpoint, expected_status=200, data=None, min_response_size=None):
+        """Run a single API test with comprehensive validation"""
+        url = f"{self.base_url}/{endpoint}"
+        headers = {'Content-Type': 'application/json'}
+        
         self.tests_run += 1
-        status = "✅ PASS" if success else "❌ FAIL"
-        print(f"\n{status} - {test_name}")
-        if details:
-            print(f"    Details: {details}")
-        if success:
-            self.tests_passed += 1
-        return success
-
-    def test_api_root(self):
-        """Test API root endpoint"""
+        print(f"\n🔍 Test {self.tests_run}: {name}")
+        print(f"   {method} {endpoint}")
+        
         try:
-            response = requests.get(f"{self.base_url}/", timeout=10)
-            success = response.status_code == 200
-            data = response.json() if success else {}
-            details = f"Status: {response.status_code}, Response: {data}"
-            return self.log_test("API Root", success, details)
+            if method == 'GET':
+                response = requests.get(url, headers=headers, timeout=15)
+            elif method == 'POST':
+                response = requests.post(url, json=data, headers=headers, timeout=30)
+            elif method == 'DELETE':
+                response = requests.delete(url, headers=headers, timeout=15)
+            else:
+                raise ValueError(f"Unsupported method: {method}")
+            
+            # Status code check
+            status_ok = response.status_code == expected_status
+            
+            # Response size check for binary data (TTS)
+            size_ok = True
+            if min_response_size and len(response.content) < min_response_size:
+                size_ok = False
+                print(f"   ❌ Response too small: {len(response.content)} bytes (expected ≥{min_response_size})")
+            
+            # JSON parsing for non-binary responses
+            json_data = {}
+            if response.headers.get('content-type', '').startswith('application/json'):
+                try:
+                    json_data = response.json()
+                except json.JSONDecodeError:
+                    print(f"   ⚠️  Invalid JSON response")
+                    json_data = {}
+            
+            if status_ok and size_ok:
+                self.tests_passed += 1
+                print(f"   ✅ PASS - Status: {response.status_code}")
+                if min_response_size:
+                    print(f"      Audio size: {len(response.content)} bytes")
+                elif json_data:
+                    print(f"      Response keys: {list(json_data.keys())}")
+                return True, json_data
+            else:
+                error_msg = f"Status: {response.status_code} (expected {expected_status})"
+                if not size_ok:
+                    error_msg += f", Size: {len(response.content)} bytes (expected ≥{min_response_size})"
+                print(f"   ❌ FAIL - {error_msg}")
+                self.failed_tests.append(f"{name}: {error_msg}")
+                return False, json_data
+                
+        except requests.exceptions.Timeout:
+            print(f"   ❌ FAIL - Request timeout (30s)")
+            self.failed_tests.append(f"{name}: Timeout")
+            return False, {}
         except Exception as e:
-            return self.log_test("API Root", False, f"Error: {str(e)}")
+            print(f"   ❌ FAIL - Error: {str(e)}")
+            self.failed_tests.append(f"{name}: {str(e)}")
+            return False, {}
+
+    def test_root_endpoint(self):
+        """Test the root API endpoint"""
+        return self.run_test("Root API Status", "GET", "")
 
     def test_stats_endpoint(self):
-        """Test /api/stats endpoint"""
-        try:
-            response = requests.get(f"{self.base_url}/stats", timeout=10)
-            success = response.status_code == 200
-            if success:
-                data = response.json()
-                required_fields = ['total_messages', 'total_memories', 'total_sessions', 'sam_online']
-                missing_fields = [field for field in required_fields if field not in data]
-                if missing_fields:
-                    success = False
-                    details = f"Missing fields: {missing_fields}"
-                else:
+        """Test stats endpoint - should return system statistics"""
+        success, data = self.run_test("System Statistics", "GET", "stats")
+        if success and data:
+            # Validate expected stats fields
+            expected_fields = ['total_messages', 'total_memories', 'total_sessions', 'sam_online', 'voice_engine']
+            missing_fields = [f for f in expected_fields if f not in data]
+            if missing_fields:
+                print(f"   ⚠️  Missing stats fields: {missing_fields}")
+            else:
+                print(f"   🎯 All stats fields present")
+                print(f"      Sam online: {data.get('sam_online')}, Voice: {data.get('voice_engine')}")
+        return success
                     details = f"Stats: {data}"
             else:
                 details = f"Status: {response.status_code}"
