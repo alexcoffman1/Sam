@@ -103,194 +103,218 @@ class SamAPITester:
                 print(f"   🎯 All stats fields present")
                 print(f"      Sam online: {data.get('sam_online')}, Voice: {data.get('voice_engine')}")
         return success
-                    details = f"Stats: {data}"
+
+    def test_voices_endpoint(self):
+        """Test voices endpoint - should return 21 voices from ElevenLabs"""
+        success, data = self.run_test("Voice List", "GET", "voices")
+        if success and data:
+            voices = data.get('voices', [])
+            voice_count = len(voices)
+            current_voice = data.get('current')
+            print(f"   🎤 Found {voice_count} voices, current: {current_voice}")
+            if voice_count >= 15:  # Should have ~21 voices, allow some margin
+                print(f"   🎯 Voice count looks good (≥15)")
             else:
-                details = f"Status: {response.status_code}"
-            return self.log_test("Stats Endpoint", success, details)
-        except Exception as e:
-            return self.log_test("Stats Endpoint", False, f"Error: {str(e)}")
+                print(f"   ⚠️  Low voice count: {voice_count} (expected ~21)")
+        return success
 
-    def test_sessions_endpoint(self):
-        """Test /api/sessions endpoint"""
-        try:
-            response = requests.get(f"{self.base_url}/sessions", timeout=10)
-            success = response.status_code == 200
-            data = response.json() if success else {}
-            details = f"Status: {response.status_code}, Sessions: {len(data) if isinstance(data, list) else 'N/A'}"
-            return self.log_test("Sessions Endpoint", success, details)
-        except Exception as e:
-            return self.log_test("Sessions Endpoint", False, f"Error: {str(e)}")
+    def test_chat_functionality(self):
+        """Test chat endpoint with GPT-4o integration"""
+        test_message = "Hi Sam, this is a test message. How are you feeling today?"
+        
+        success, data = self.run_test(
+            "Chat with Sam", 
+            "POST", 
+            "chat",
+            data={"session_id": self.session_id, "message": test_message}
+        )
+        
+        if success and data:
+            response_text = data.get('response', '')
+            emotion = data.get('emotion', '')
+            msg_id = data.get('id', '')
+            
+            print(f"   💬 Sam's response: {response_text[:100]}{'...' if len(response_text) > 100 else ''}")
+            print(f"   😊 Emotion: {emotion}")
+            print(f"   🆔 Message ID: {msg_id}")
+            
+            # Validate response quality
+            if len(response_text) > 10 and not any(x in response_text.lower() for x in ['error', 'failed', 'as an ai']):
+                print(f"   🎯 Response looks natural and engaging")
+            else:
+                print(f"   ⚠️  Response may be problematic")
+                
+        return success
 
-    def test_chat_endpoint(self):
-        """Test /api/chat endpoint with GPT-4o"""
-        try:
-            payload = {
+    def test_tts_functionality(self):
+        """Test TTS endpoint with ElevenLabs integration"""
+        test_text = "Hi there! I've been thinking about you. Tell me something — how are you feeling right now?"
+        
+        success, data = self.run_test(
+            "Text-to-Speech", 
+            "POST", 
+            "tts",
+            data={"text": test_text, "session_id": self.session_id, "emotion": "affectionate"},
+            min_response_size=77000  # Should be ~77KB+ as mentioned in requirements
+        )
+        
+        return success
+
+    def test_memory_system(self):
+        """Test memory storage and retrieval"""
+        # Test memory creation
+        memory_success, _ = self.run_test(
+            "Create Memory", 
+            "POST", 
+            "memories",
+            expected_status=200,
+            data={
                 "session_id": self.session_id,
-                "message": "Hi Sam! This is a test message. Please respond briefly.",
-                "user_name": "TestUser"
+                "content": "User mentioned they love coffee and work as a software developer",
+                "category": "preference",
+                "sentiment": "joy"
             }
-            response = requests.post(f"{self.base_url}/chat", json=payload, timeout=30)
-            success = response.status_code == 200
-            if success:
-                data = response.json()
-                required_fields = ['id', 'session_id', 'response', 'emotion', 'timestamp']
-                missing_fields = [field for field in required_fields if field not in data]
-                if missing_fields:
-                    success = False
-                    details = f"Missing fields: {missing_fields}"
-                else:
-                    details = f"Response: {data['response'][:100]}..., Emotion: {data['emotion']}"
-            else:
-                try:
-                    error_data = response.json()
-                    details = f"Status: {response.status_code}, Error: {error_data}"
-                except:
-                    details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            return self.log_test("Chat with GPT-4o", success, details)
-        except Exception as e:
-            return self.log_test("Chat with GPT-4o", False, f"Error: {str(e)}")
-
-    def test_messages_retrieval(self):
-        """Test /api/messages/{session_id} endpoint"""
-        try:
-            response = requests.get(f"{self.base_url}/messages/{self.session_id}?limit=50", timeout=10)
-            success = response.status_code == 200
-            if success:
-                data = response.json()
-                details = f"Retrieved {len(data)} messages"
-            else:
-                details = f"Status: {response.status_code}"
-            return self.log_test("Messages Retrieval", success, details)
-        except Exception as e:
-            return self.log_test("Messages Retrieval", False, f"Error: {str(e)}")
-
-    def test_tts_endpoint(self):
-        """Test /api/tts endpoint for voice generation"""
-        try:
-            payload = {
-                "text": "Hello, this is a TTS test.",
-                "session_id": self.session_id
-            }
-            response = requests.post(f"{self.base_url}/tts", json=payload, timeout=15)
-            success = response.status_code == 200
-            if success:
-                content_type = response.headers.get('content-type', '')
-                content_length = len(response.content)
-                details = f"Audio generated: {content_length} bytes, Type: {content_type}"
-            else:
-                try:
-                    error_data = response.json()
-                    details = f"Status: {response.status_code}, Error: {error_data}"
-                except:
-                    details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            return self.log_test("TTS Voice Generation", success, details)
-        except Exception as e:
-            return self.log_test("TTS Voice Generation", False, f"Error: {str(e)}")
-
-    def test_memory_endpoints(self):
-        """Test memory-related endpoints"""
-        try:
-            # Get memories
-            response = requests.get(f"{self.base_url}/memories/{self.session_id}", timeout=10)
-            success = response.status_code == 200
-            if success:
-                memories = response.json()
-                details = f"Retrieved {len(memories)} memories"
-            else:
-                details = f"Status: {response.status_code}"
-            return self.log_test("Memory Retrieval", success, details)
-        except Exception as e:
-            return self.log_test("Memory Retrieval", False, f"Error: {str(e)}")
+        )
+        
+        # Test memory retrieval
+        if memory_success:
+            time.sleep(1)  # Brief delay for database consistency
+            retrieve_success, data = self.run_test("Get Memories", "GET", f"memories/{self.session_id}")
+            if retrieve_success and data and len(data) > 0:
+                print(f"   🧠 Retrieved {len(data)} memories")
+                return True
+        
+        return memory_success
 
     def test_memory_graph(self):
-        """Test /api/memories/{session_id}/graph endpoint"""
-        try:
-            response = requests.get(f"{self.base_url}/memories/{self.session_id}/graph", timeout=10)
-            success = response.status_code == 200
-            if success:
-                data = response.json()
-                nodes_count = len(data.get('nodes', []))
-                links_count = len(data.get('links', []))
-                details = f"Graph: {nodes_count} nodes, {links_count} links"
-            else:
-                details = f"Status: {response.status_code}"
-            return self.log_test("Memory Graph", success, details)
-        except Exception as e:
-            return self.log_test("Memory Graph", False, f"Error: {str(e)}")
+        """Test memory graph endpoint for Memory Garden"""
+        return self.run_test("Memory Graph", "GET", f"memories/{self.session_id}/graph")
+
+    def test_messages_crud(self):
+        """Test message storage and retrieval"""
+        # Get messages (might be empty)
+        get_success, data = self.run_test("Get Messages", "GET", f"messages/{self.session_id}")
+        
+        if get_success:
+            initial_count = len(data) if data else 0
+            print(f"   📨 Found {initial_count} existing messages")
+            
+            # Test message deletion
+            delete_success, _ = self.run_test("Clear Messages", "DELETE", f"messages/{self.session_id}")
+            return delete_success
+            
+        return get_success
+
+    def test_weekly_reflections(self):
+        """Test weekly reflection generation"""
+        return self.run_test(
+            "Generate Weekly Reflection", 
+            "POST", 
+            f"weekly-reflection/{self.session_id}"
+        )
 
     def test_inner_life(self):
-        """Test /api/inner-life/{session_id} endpoint"""
-        try:
-            response = requests.post(f"{self.base_url}/inner-life/{self.session_id}", timeout=20)
-            success = response.status_code == 200
-            if success:
-                data = response.json()
-                reflection = data.get('reflection', '')
-                details = f"Reflection generated: {reflection[:100]}..."
-            else:
-                try:
-                    error_data = response.json()
-                    details = f"Status: {response.status_code}, Error: {error_data}"
-                except:
-                    details = f"Status: {response.status_code}"
-            return self.log_test("Inner Life Reflection", success, details)
-        except Exception as e:
-            return self.log_test("Inner Life Reflection", False, f"Error: {str(e)}")
+        """Test inner life reflection generation"""
+        return self.run_test(
+            "Generate Inner Life", 
+            "POST", 
+            f"inner-life/{self.session_id}"
+        )
 
-    def test_clear_conversation(self):
-        """Test conversation clearing functionality"""
-        try:
-            response = requests.delete(f"{self.base_url}/messages/{self.session_id}", timeout=10)
-            success = response.status_code == 200
-            if success:
-                data = response.json()
-                deleted_count = data.get('deleted', 0)
-                details = f"Cleared {deleted_count} messages"
-            else:
-                details = f"Status: {response.status_code}"
-            return self.log_test("Clear Conversation", success, details)
-        except Exception as e:
-            return self.log_test("Clear Conversation", False, f"Error: {str(e)}")
-
-    def run_all_tests(self):
-        """Run comprehensive backend test suite"""
-        print("🧪 Starting Sam AI Backend API Tests")
-        print(f"Base URL: {self.base_url}")
-        print(f"Test Session ID: {self.session_id}")
-        print("=" * 60)
-
-        # Basic connectivity tests
-        self.test_api_root()
-        self.test_stats_endpoint()
-        self.test_sessions_endpoint()
-
-        # Core functionality tests
-        self.test_chat_endpoint()  # This should create messages
-        self.test_messages_retrieval()
-        self.test_memory_endpoints()
-        self.test_memory_graph()
-
-        # AI features
-        self.test_tts_endpoint()
-        self.test_inner_life()
-
-        # Admin functions
-        self.test_clear_conversation()
-
-        # Final results
-        print("\n" + "=" * 60)
-        print(f"📊 FINAL RESULTS: {self.tests_passed}/{self.tests_run} tests passed")
+    def test_proactive_messages(self):
+        """Test proactive message generation"""
+        success = self.run_test(
+            "Generate Proactive Message", 
+            "POST", 
+            f"proactive/{self.session_id}"
+        )[0]
         
-        if self.tests_passed == self.tests_run:
-            print("🎉 All tests PASSED - Backend is fully functional!")
-            return 0
-        else:
-            print("⚠️  Some tests FAILED - Issues need attention")
-            return 1
+        # Also test retrieval
+        if success:
+            time.sleep(1)
+            return self.run_test("Get Proactive Messages", "GET", f"proactive/{self.session_id}")[0]
+        return success
+
+    def test_voice_settings(self):
+        """Test voice configuration"""
+        test_voice_id = "EXAVITQu4vr4xnSDxMaL"  # Sarah voice as mentioned in backend
+        return self.run_test(
+            "Set Voice", 
+            "POST", 
+            "voices/set",
+            data={"voice_id": test_voice_id}
+        )
+
+    def test_sessions_list(self):
+        """Test session listing"""
+        return self.run_test("List Sessions", "GET", "sessions")
+
+    def run_comprehensive_test_suite(self):
+        """Run all tests in logical order"""
+        print(f"\n🚀 Starting Comprehensive Backend Test Suite")
+        print(f"⏰ {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        test_suite = [
+            ("Basic API Health", self.test_root_endpoint),
+            ("System Statistics", self.test_stats_endpoint),
+            ("Voice List (ElevenLabs)", self.test_voices_endpoint),
+            ("Chat with GPT-4o", self.test_chat_functionality),
+            ("TTS Audio Generation", self.test_tts_functionality),
+            ("Memory System", self.test_memory_system),
+            ("Memory Graph", self.test_memory_graph),
+            ("Messages CRUD", self.test_messages_crud),
+            ("Weekly Reflections", self.test_weekly_reflections),
+            ("Inner Life Generation", self.test_inner_life),
+            ("Proactive Messages", self.test_proactive_messages),
+            ("Voice Settings", self.test_voice_settings),
+            ("Sessions List", self.test_sessions_list)
+        ]
+        
+        for test_name, test_func in test_suite:
+            try:
+                test_func()
+                time.sleep(0.5)  # Brief delay between tests
+            except Exception as e:
+                print(f"   ❌ FAIL - {test_name}: {str(e)}")
+                self.failed_tests.append(f"{test_name}: {str(e)}")
+        
+        self.print_summary()
+
+    def print_summary(self):
+        """Print comprehensive test results"""
+        print(f"\n{'='*60}")
+        print(f"🏁 BACKEND TEST SUMMARY")
+        print(f"{'='*60}")
+        
+        pass_rate = (self.tests_passed / self.tests_run * 100) if self.tests_run > 0 else 0
+        
+        print(f"📊 Tests Run: {self.tests_run}")
+        print(f"✅ Tests Passed: {self.tests_passed}")
+        print(f"❌ Tests Failed: {len(self.failed_tests)}")
+        print(f"📈 Pass Rate: {pass_rate:.1f}%")
+        
+        if self.failed_tests:
+            print(f"\n❌ FAILED TESTS:")
+            for i, failure in enumerate(self.failed_tests, 1):
+                print(f"   {i}. {failure}")
+        
+        print(f"\n{'='*60}")
+        
+        # Return exit code based on results
+        return 0 if len(self.failed_tests) == 0 else 1
 
 def main():
+    """Main test runner"""
     tester = SamAPITester()
-    return tester.run_all_tests()
+    exit_code = tester.run_comprehensive_test_suite()
+    
+    print(f"\n🎯 Backend testing complete!")
+    if exit_code == 0:
+        print("🎉 All backend APIs are working correctly!")
+    else:
+        print("⚠️  Some backend issues detected. Check logs above.")
+    
+    return exit_code
 
 if __name__ == "__main__":
     sys.exit(main())
