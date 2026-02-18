@@ -18,7 +18,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="relative w-full h-full overflow-hidden" style={{ background: 'var(--color-bg)' }}>
+      <div className="relative w-full h-full overflow-hidden" style={{ background: '#FFFFFF' }}>
         <NavBar />
         <Routes>
           <Route path="/" element={<SamPage sessionId={sessionId} />} />
@@ -26,7 +26,7 @@ function App() {
           <Route path="/admin" element={<AdminPortal sessionId={sessionId} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-        <Toaster position="bottom-right" theme="dark" />
+        <Toaster position="bottom-right" theme="light" />
       </div>
     </BrowserRouter>
   );
