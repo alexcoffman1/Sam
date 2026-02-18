@@ -405,6 +405,7 @@ export default function SamPage({ sessionId }) {
               {orbState === ORB_STATE.THINKING && 'Thinking...'}
               {orbState === ORB_STATE.SPEAKING && 'Speaking — click to stop'}
             </p>
+            <HeartbeatThinkingDot sessionId={sessionId} />
           </div>
         </div>
 
