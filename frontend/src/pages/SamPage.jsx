@@ -410,13 +410,6 @@ export default function SamPage({ sessionId }) {
           className="flex-1 w-full max-w-2xl px-6 overflow-y-auto"
           style={{ paddingBottom: '8px' }}
         >
-          {messages.length === 0 && !isLoading && (
-            <div className="flex flex-col items-center justify-center h-32 opacity-50">
-              <p className="text-sm" style={{ color: '#666666', fontFamily: 'Manrope, sans-serif' }}>
-                she's waiting for you
-              </p>
-            </div>
-          )}
           <div className="space-y-5">
             {messages.map((msg, idx) => (
               <MessageBubble key={msg.id || idx} message={msg} index={idx} />
