@@ -186,30 +186,30 @@ export default function AdminPortal({ sessionId }) {
         {activeTab === 'overview' && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <StatCard icon={<MessageCircle size={16} />} label="Messages" value={stats?.total_messages ?? '—'} color="#E8927C" testId="stat-messages" />
-              <StatCard icon={<Brain size={16} />} label="Memories" value={stats?.total_memories ?? '—'} color="#F0A500" testId="stat-memories" />
-              <StatCard icon={<Layers size={16} />} label="Sessions" value={stats?.total_sessions ?? '—'} color="#C8102E" testId="stat-sessions" />
+              <StatCard icon={<MessageCircle size={16} />} label="Messages" value={stats?.total_messages ?? '—'} color="#FF6B9D" testId="stat-messages" />
+              <StatCard icon={<Brain size={16} />} label="Memories" value={stats?.total_memories ?? '—'} color="#FFB347" testId="stat-memories" />
+              <StatCard icon={<Layers size={16} />} label="Sessions" value={stats?.total_sessions ?? '—'} color="#E84B8A" testId="stat-sessions" />
               <StatCard icon={<Calendar size={16} />} label="Reflections" value={stats?.total_reflections ?? '—'} color="#60A5FA" testId="stat-reflections" />
-              <StatCard icon={<Sparkles size={16} />} label="Proactive" value={stats?.total_proactive ?? '—'} color="#E8927C" testId="stat-proactive" />
+              <StatCard icon={<Sparkles size={16} />} label="Proactive" value={stats?.total_proactive ?? '—'} color="#FF8FB1" testId="stat-proactive" />
               <StatCard icon={<Activity size={16} />} label="Status" value={stats?.sam_online ? 'Alive' : 'Offline'} color={stats?.sam_online ? '#34D399' : '#FF4F4F'} testId="stat-status" />
             </div>
 
             {/* Quick actions */}
             <div className="glass-panel rounded-2xl p-6">
-              <h3 className="text-base font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
+              <h3 className="text-base font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1A1A1A' }}>
                 Quick Actions
               </h3>
               <div className="grid grid-cols-2 gap-3">
-                <ActionButton icon={<Zap size={14} />} label="Inner Life Reflection" onClick={generateInnerLife} color="#F0A500" testId="inner-life-btn" />
+                <ActionButton icon={<Zap size={14} />} label="Inner Life Reflection" onClick={generateInnerLife} color="#FFB347" testId="inner-life-btn" />
                 <ActionButton icon={<Calendar size={14} />} label={isReflecting ? 'Reflecting...' : 'Weekly Reflection'} onClick={generateWeeklyReflection} color="#60A5FA" testId="weekly-reflection-btn" disabled={isReflecting} />
-                <ActionButton icon={<Sparkles size={14} />} label="Proactive Message" onClick={generateProactive} color="#E8927C" testId="proactive-action-btn" />
+                <ActionButton icon={<Sparkles size={14} />} label="Proactive Message" onClick={generateProactive} color="#FF6B9D" testId="proactive-action-btn" />
                 <ActionButton icon={<Trash2 size={14} />} label="Clear Conversation" onClick={clearConversation} color="#FF4F4F" testId="clear-conversation-btn" danger />
               </div>
             </div>
 
             {/* Plan selector */}
             <div className="glass-panel rounded-2xl p-6">
-              <h3 className="text-base font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
+              <h3 className="text-base font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1A1A1A' }}>
                 Plan
               </h3>
               <div className="grid grid-cols-3 gap-3">
@@ -220,12 +220,12 @@ export default function AdminPortal({ sessionId }) {
                     onClick={() => setSelectedPlan(plan.id)}
                     className="p-4 rounded-xl text-left transition-all duration-200"
                     style={{
-                      background: selectedPlan === plan.id ? `${plan.color}18` : 'rgba(255,255,255,0.02)',
-                      border: `1px solid ${selectedPlan === plan.id ? plan.color + '55' : 'rgba(255,255,255,0.05)'}`,
+                      background: selectedPlan === plan.id ? `${plan.color}15` : 'rgba(0,0,0,0.02)',
+                      border: `1px solid ${selectedPlan === plan.id ? plan.color + '55' : 'rgba(0,0,0,0.06)'}`,
                     }}
                   >
-                    <div className="text-sm font-semibold mb-1" style={{ color: selectedPlan === plan.id ? plan.color : '#635858', fontFamily: 'Outfit, sans-serif' }}>{plan.name}</div>
-                    <div className="text-xs" style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>{plan.desc}</div>
+                    <div className="text-sm font-semibold mb-1" style={{ color: selectedPlan === plan.id ? plan.color : '#999999', fontFamily: 'Outfit, sans-serif' }}>{plan.name}</div>
+                    <div className="text-xs" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>{plan.desc}</div>
                   </button>
                 ))}
               </div>
@@ -235,11 +235,11 @@ export default function AdminPortal({ sessionId }) {
             <div className="glass-panel rounded-2xl p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold" style={{ color: '#F2F0F0', fontFamily: 'Outfit, sans-serif' }}>Engine</p>
-                  <p className="text-xs mt-1" style={{ color: '#635858', fontFamily: 'Manrope, sans-serif' }}>
+                  <p className="text-sm font-semibold" style={{ color: '#1A1A1A', fontFamily: 'Outfit, sans-serif' }}>Engine</p>
+                  <p className="text-xs mt-1" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>
                     Brain: {stats?.brain || 'gpt-4o'} · Voice: {stats?.voice_engine || 'elevenlabs-flash-v2.5'}
                   </p>
-                  <p className="text-xs mt-0.5" style={{ color: '#635858', fontFamily: 'Manrope, sans-serif' }}>
+                  <p className="text-xs mt-0.5" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>
                     SuperMemory: {stats?.supermemory ? '✓ connected' : '○ offline'} · Heartbeat: every {stats?.heartbeat_interval_min || 45} min
                   </p>
                 </div>
