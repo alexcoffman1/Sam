@@ -257,7 +257,7 @@ export default function AdminPortal({ sessionId }) {
           <div className="space-y-6">
             <div className="glass-panel rounded-2xl p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-semibold" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
+                <h3 className="text-base font-semibold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1A1A1A' }}>
                   Sam's Voice
                 </h3>
                 <button
@@ -265,32 +265,32 @@ export default function AdminPortal({ sessionId }) {
                   onClick={() => previewVoice(currentVoice)}
                   disabled={!!previewAudio}
                   className="flex items-center gap-2 px-4 py-2 rounded-full text-sm glass-panel transition-colors duration-200"
-                  style={{ color: previewAudio ? '#635858' : '#E8927C', fontFamily: 'Manrope, sans-serif' }}
+                  style={{ color: previewAudio ? '#CCCCCC' : '#FF6B9D', fontFamily: 'Manrope, sans-serif' }}
                 >
                   <Mic size={13} />
                   {previewAudio ? 'Playing...' : 'Preview Sam'}
                 </button>
               </div>
 
-              <div className="p-4 rounded-xl mb-4" style={{ background: 'rgba(200,16,46,0.08)', border: '1px solid rgba(200,16,46,0.15)' }}>
+              <div className="p-4 rounded-xl mb-4" style={{ background: 'rgba(255,107,157,0.08)', border: '1px solid rgba(255,107,157,0.15)' }}>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'radial-gradient(circle, #E8927C, #C8102E)' }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'radial-gradient(circle, #FFB6C1, #FF6B9D)' }}>
                     <Mic size={16} style={{ color: 'white' }} />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold" style={{ color: '#F2F0F0', fontFamily: 'Outfit, sans-serif' }}>Samantha Voice</p>
-                    <p className="text-xs" style={{ color: '#635858', fontFamily: 'Manrope, sans-serif' }}>ElevenLabs Flash v2.5 · warm, breathy female · ~75ms latency</p>
+                    <p className="text-sm font-semibold" style={{ color: '#1A1A1A', fontFamily: 'Outfit, sans-serif' }}>Samantha Voice</p>
+                    <p className="text-xs" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>ElevenLabs Flash v2.5 · warm, breathy female · ~75ms latency</p>
                   </div>
                 </div>
               </div>
 
               {/* Voice list */}
-              <p className="text-xs mb-3 uppercase tracking-widest" style={{ color: '#635858', fontFamily: 'Manrope, sans-serif' }}>
+              <p className="text-xs mb-3 uppercase tracking-widest" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>
                 Available Voices ({voices.length})
               </p>
               <div className="space-y-2 max-h-72 overflow-y-auto">
                 {voices.length === 0 && (
-                  <p className="text-sm text-center py-4" style={{ color: '#635858' }}>Loading voices...</p>
+                  <p className="text-sm text-center py-4" style={{ color: '#999999' }}>Loading voices...</p>
                 )}
                 {voices.map(v => (
                   <button
@@ -299,20 +299,20 @@ export default function AdminPortal({ sessionId }) {
                     onClick={() => setVoice(v.voice_id)}
                     className="w-full flex items-center justify-between p-3 rounded-xl text-left transition-all duration-200"
                     style={{
-                      background: currentVoice === v.voice_id ? 'rgba(232,146,124,0.1)' : 'rgba(255,255,255,0.02)',
-                      border: `1px solid ${currentVoice === v.voice_id ? 'rgba(232,146,124,0.3)' : 'rgba(255,255,255,0.04)'}`
+                      background: currentVoice === v.voice_id ? 'rgba(255,107,157,0.1)' : 'rgba(0,0,0,0.02)',
+                      border: `1px solid ${currentVoice === v.voice_id ? 'rgba(255,107,157,0.3)' : 'rgba(0,0,0,0.06)'}`
                     }}
                   >
                     <div>
-                      <p className="text-sm" style={{ color: currentVoice === v.voice_id ? '#E8927C' : '#A49898', fontFamily: 'Manrope, sans-serif' }}>
+                      <p className="text-sm" style={{ color: currentVoice === v.voice_id ? '#FF6B9D' : '#666666', fontFamily: 'Manrope, sans-serif' }}>
                         {v.name}
                       </p>
                       {v.labels?.accent && (
-                        <p className="text-xs" style={{ color: '#3a2828' }}>{v.labels.accent}</p>
+                        <p className="text-xs" style={{ color: '#999999' }}>{v.labels.accent}</p>
                       )}
                     </div>
                     {currentVoice === v.voice_id && (
-                      <div className="w-2 h-2 rounded-full" style={{ background: '#E8927C' }} />
+                      <div className="w-2 h-2 rounded-full" style={{ background: '#FF6B9D' }} />
                     )}
                   </button>
                 ))}
@@ -321,21 +321,21 @@ export default function AdminPortal({ sessionId }) {
 
             {/* Emotion voice settings info */}
             <div className="glass-panel rounded-2xl p-6">
-              <h3 className="text-base font-semibold mb-3" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
+              <h3 className="text-base font-semibold mb-3" style={{ fontFamily: 'Outfit, sans-serif', color: '#1A1A1A' }}>
                 Emotional Voice Settings
               </h3>
               <div className="space-y-2">
                 {[
-                  { emotion: 'affectionate', desc: 'Soft, intimate, warm — stability 0.45', color: '#C8102E' },
-                  { emotion: 'laughing', desc: 'Expressive, light, playful — stability 0.35', color: '#E8927C' },
-                  { emotion: 'thinking', desc: 'Measured, thoughtful, paused — stability 0.60', color: '#F0A500' },
+                  { emotion: 'affectionate', desc: 'Soft, intimate, warm — stability 0.45', color: '#E84B8A' },
+                  { emotion: 'laughing', desc: 'Expressive, light, playful — stability 0.35', color: '#FF8FB1' },
+                  { emotion: 'thinking', desc: 'Measured, thoughtful, paused — stability 0.60', color: '#FFB347' },
                   { emotion: 'excited', desc: 'Energetic, bright, vibrant — stability 0.30', color: '#34D399' },
                   { emotion: 'tender', desc: 'Quiet, supportive, soft — stability 0.55', color: '#60A5FA' },
                 ].map(e => (
                   <div key={e.emotion} className="flex items-center gap-3 p-2">
                     <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: e.color }} />
-                    <span className="text-sm" style={{ color: '#A49898', fontFamily: 'Manrope, sans-serif', minWidth: 90 }}>{e.emotion}</span>
-                    <span className="text-xs" style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>{e.desc}</span>
+                    <span className="text-sm" style={{ color: '#666666', fontFamily: 'Manrope, sans-serif', minWidth: 90 }}>{e.emotion}</span>
+                    <span className="text-xs" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>{e.desc}</span>
                   </div>
                 ))}
               </div>
