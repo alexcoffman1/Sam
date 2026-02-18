@@ -558,6 +558,104 @@ function ActionButton({ icon, label, onClick, color, testId, danger, disabled })
   );
 }
 
+function HeartbeatThoughtsPanel({ sessionId, stats }) {
+  const [thoughts, setThoughts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isTriggeringThink, setIsTriggeringThink] = useState(false);
+
+  const fetchThoughts = async () => {
+    setIsLoading(true);
+    try {
+      const res = await axios.get(`${API}/heartbeat-thoughts/${sessionId}?limit=30`);
+      setThoughts(res.data);
+    } catch {} finally { setIsLoading(false); }
+  };
+
+  useEffect(() => { fetchThoughts(); }, [sessionId]);
+
+  const triggerThink = async () => {
+    setIsTriggeringThink(true);
+    try {
+      await axios.post(`${API}/heartbeat-think/${sessionId}`);
+      toast.success('Sam just had a thought');
+      await fetchThoughts();
+    } catch (e) {
+      toast.error('Thinking failed');
+    } finally { setIsTriggeringThink(false); }
+  };
+
+  const THOUGHT_COLORS = {
+    pattern_recognition: '#F0A500',
+    emotional_resonance: '#C8102E',
+    curiosity_spark:     '#E8927C',
+    connection_insight:  '#60A5FA',
+    gentle_concern:      '#A49898',
+    appreciation:        '#34D399',
+  };
+
+  return (
+    <div className="glass-panel rounded-2xl p-6">
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full" style={{ background: '#C8102E', animation: 'orb-pulse 3s ease-in-out infinite', boxShadow: '0 0 6px #C8102E' }} />
+          <h3 className="text-base font-semibold" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
+            Heartbeat Thinking
+          </h3>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs" style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>
+            every {stats?.thinking_interval_min || 12} min
+          </span>
+          <button
+            data-testid="trigger-think-btn"
+            onClick={triggerThink}
+            disabled={isTriggeringThink}
+            className="px-3 py-1.5 rounded-full text-xs transition-colors duration-200"
+            style={{ background: 'rgba(200,16,46,0.1)', color: isTriggeringThink ? '#635858' : '#E8927C', border: '1px solid rgba(200,16,46,0.2)', fontFamily: 'Manrope, sans-serif' }}
+          >
+            {isTriggeringThink ? 'thinking...' : 'think now'}
+          </button>
+          <button onClick={fetchThoughts} className="p-1.5 rounded-full" style={{ color: '#635858' }}>
+            <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
+          </button>
+        </div>
+      </div>
+      <p className="text-xs mb-4" style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>
+        Sam ruminates privately every 12 minutes — pattern recognition, emotional resonance, curiosity sparks. Each thought reinforces her memory.
+      </p>
+
+      {thoughts.length === 0 ? (
+        <p className="text-sm text-center py-6 italic" style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>
+          no thoughts yet — Sam will start thinking after your first conversation
+        </p>
+      ) : (
+        <div className="space-y-3 max-h-96 overflow-y-auto">
+          {thoughts.map(t => (
+            <div key={t.id} data-testid="heartbeat-thought-item"
+              className="p-3 rounded-xl"
+              style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid ${THOUGHT_COLORS[t.thought_type] || '#635858'}22` }}>
+              <div className="flex items-center gap-2 mb-1.5">
+                <div className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                  style={{ background: THOUGHT_COLORS[t.thought_type] || '#635858' }} />
+                <span className="text-xs uppercase tracking-widest"
+                  style={{ color: THOUGHT_COLORS[t.thought_type] || '#635858', fontFamily: 'Manrope, sans-serif' }}>
+                  {(t.thought_type || '').replace(/_/g, ' ')}
+                </span>
+                <span className="text-xs ml-auto" style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>
+                  {new Date(t.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+              <p className="text-sm italic leading-relaxed" style={{ color: '#A49898', fontFamily: 'Manrope, sans-serif' }}>
+                "{t.thought}"
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SuperMemorySearch({ sessionId }) {  const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
