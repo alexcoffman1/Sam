@@ -859,7 +859,8 @@ async def get_stats():
         "voice_engine": "elevenlabs-flash-v2.5",
         "brain": "gpt-4o",
         "supermemory": sm_client is not None,
-        "heartbeat_interval_min": 45
+        "heartbeat_interval_min": 45,
+        "thinking_interval_min": 12
     }
 
 
