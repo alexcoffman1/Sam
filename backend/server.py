@@ -230,7 +230,19 @@ def clean_for_tts(text: str) -> str:
     text = re.sub(r'\[(.+?)\]\(.+?\)', r'\1', text)
     return text[:4096]
 
+async def call_sam(messages: list[dict], temperature: float = 0.88) -> str:
+    """Direct OpenAI API call with full message history. No wrapper, no confusion."""
+    resp = await openai_client.chat.completions.create(
+        model=SAM_MODEL,
+        messages=messages,
+        temperature=temperature,
+        max_tokens=400,
+    )
+    return resp.choices[0].message.content.strip()
+
+
 def get_sam_chat(session_id: str) -> LlmChat:
+    """Legacy — used only for inner-life / reflection tasks."""
     return LlmChat(
         api_key=EMERGENT_LLM_KEY,
         session_id=session_id,
