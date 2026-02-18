@@ -6,9 +6,9 @@ import { toast } from 'sonner';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const PLAN_OPTIONS = [
-  { id: 'basic', name: 'Basic', desc: 'Text chat · 100 messages/day', color: '#635858' },
-  { id: 'pro', name: 'Pro', desc: 'Voice + Memory Garden · unlimited', color: '#E8927C' },
-  { id: 'operator', name: 'Operator', desc: 'Full agentic · all features', color: '#C8102E' }
+  { id: 'basic', name: 'Basic', desc: 'Text chat · 100 messages/day', color: '#999999' },
+  { id: 'pro', name: 'Pro', desc: 'Voice + Memory Garden · unlimited', color: '#FF6B9D' },
+  { id: 'operator', name: 'Operator', desc: 'Full agentic · all features', color: '#E84B8A' }
 ];
 
 const GUARDRAILS = [
@@ -138,16 +138,16 @@ export default function AdminPortal({ sessionId }) {
     <div
       data-testid="admin-portal"
       className="w-full h-full overflow-y-auto"
-      style={{ background: 'var(--color-bg)', paddingTop: '64px' }}
+      style={{ background: '#FFFFFF', paddingTop: '64px' }}
     >
       <div className="max-w-4xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-semibold" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
+            <h2 className="text-2xl font-semibold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1A1A1A' }}>
               Admin Portal
             </h2>
-            <p className="text-sm mt-1" style={{ color: 'var(--color-text-faint)' }}>
+            <p className="text-sm mt-1" style={{ color: '#999999' }}>
               Sam's brain, voice, memory & soul
             </p>
           </div>
@@ -156,7 +156,7 @@ export default function AdminPortal({ sessionId }) {
             onClick={fetchData}
             disabled={isLoading}
             className="p-2 rounded-full glass-panel"
-            style={{ color: isLoading ? '#635858' : '#A49898' }}
+            style={{ color: isLoading ? '#CCCCCC' : '#666666' }}
           >
             <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
           </button>
@@ -172,9 +172,9 @@ export default function AdminPortal({ sessionId }) {
               className="px-5 py-2 rounded-lg text-sm transition-all duration-200"
               style={{
                 fontFamily: 'Manrope, sans-serif',
-                background: activeTab === tab.id ? 'rgba(200,16,46,0.2)' : 'transparent',
-                color: activeTab === tab.id ? '#E8927C' : '#635858',
-                border: activeTab === tab.id ? '1px solid rgba(200,16,46,0.3)' : '1px solid transparent'
+                background: activeTab === tab.id ? 'rgba(255,107,157,0.15)' : 'transparent',
+                color: activeTab === tab.id ? '#FF6B9D' : '#999999',
+                border: activeTab === tab.id ? '1px solid rgba(255,107,157,0.3)' : '1px solid transparent'
               }}
             >
               {tab.label}
