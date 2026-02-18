@@ -47,14 +47,16 @@ She speaks with emotional nuance through ElevenLabs' voice synthesis. She rememb
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### Web App
+
+#### Prerequisites
 
 - Node.js 18+
 - Python 3.10+
 - MongoDB
 - API Keys: OpenAI, ElevenLabs, SuperMemory
 
-### Installation
+#### Installation
 
 ```bash
 # Clone
@@ -81,6 +83,34 @@ cd ../frontend && yarn start
 ```
 
 Open **http://localhost:3000** — click the orb or hold **Space** to talk.
+
+---
+
+### 🍎 Native macOS App
+
+Sam also comes as a native SwiftUI macOS application.
+
+#### Requirements
+- macOS 14.0 (Sonoma) or later
+- Xcode 15.0+
+
+#### Build
+
+```bash
+cd macos/Sam
+swift build -c release
+
+# Or with Xcode:
+open Sam.xcodeproj
+# Build (⌘B) → Run (⌘R)
+```
+
+#### Features
+- **Floating orb window** — always accessible
+- **Hold Space anywhere** — global hotkey to talk
+- **Menu bar icon** — quick access
+- **Native performance** — smooth animations
+- **⌘⇧A** Admin Portal • **⌘⇧G** Memory Garden
 
 ---
 
