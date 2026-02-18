@@ -171,20 +171,6 @@ export default function OrbCanvas({ state = 'idle', emotion = 'neutral', amplitu
           <RippleRing delay={0.8} />
         </>
       )}
-
-      {/* State label */}
-      {stateConfig.label && (
-        <div
-          className="absolute -bottom-10 text-sm tracking-widest uppercase"
-          style={{
-            color: 'var(--color-text-muted)',
-            fontFamily: 'Manrope, sans-serif',
-            letterSpacing: '0.15em'
-          }}
-        >
-          {stateConfig.label}
-        </div>
-      )}
     </div>
   );
 }
