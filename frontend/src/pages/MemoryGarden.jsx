@@ -245,10 +245,10 @@ export default function MemoryGarden({ sessionId }) {
 
       /* draw */
       ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = '#090505'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, W, H);
 
       // Subtle grid
-      ctx.strokeStyle = 'rgba(255,255,255,0.025)'; ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(0,0,0,0.04)'; ctx.lineWidth = 1;
       for (let gx = 0; gx < W; gx += 60) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
       for (let gy = 0; gy < H; gy += 60) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
 
@@ -287,11 +287,14 @@ export default function MemoryGarden({ sessionId }) {
             const label = node.label || '';
             ctx.font = '10px Manrope, sans-serif';
             const tw = ctx.measureText(label).width;
-            ctx.fillStyle = 'rgba(9,5,5,0.85)';
+            ctx.fillStyle = 'rgba(255,255,255,0.95)';
             ctx.beginPath();
             ctx.roundRect(node.x - tw/2 - 6, node.y + r * 2.4, tw + 12, 18, 4);
             ctx.fill();
-            ctx.fillStyle = '#F2F0F0';
+            ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.fillStyle = '#1A1A1A';
             ctx.textAlign = 'center';
             ctx.fillText(label, node.x, node.y + r * 2.4 + 13);
           }
@@ -300,7 +303,7 @@ export default function MemoryGarden({ sessionId }) {
 
       // Floating count badge top-right of canvas
       ctx.font = '11px Manrope, sans-serif';
-      ctx.fillStyle = 'rgba(242,240,240,0.2)';
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
       ctx.textAlign = 'right';
       ctx.fillText(`${nodes.filter(n => n.type !== 'category').length} memories`, W - 12, 20);
 
