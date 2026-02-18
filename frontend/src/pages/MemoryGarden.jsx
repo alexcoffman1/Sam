@@ -472,11 +472,11 @@ export default function MemoryGarden({ sessionId }) {
       <div className="flex-1 flex overflow-hidden gap-0 min-h-0">
 
         {/* Canvas */}
-        <div className="relative flex-1 min-w-0 m-3 mr-0 rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.05)' }}>
+        <div className="relative flex-1 min-w-0 m-3 mr-0 rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(0,0,0,0.08)' }}>
           {memories.length === 0 && !isLoading ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ background: '#090505' }}>
-              <div className="text-5xl mb-4" style={{ color: '#2a1818' }}>◎</div>
-              <p className="text-sm" style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>
+            <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ background: '#FFFFFF' }}>
+              <div className="text-5xl mb-4" style={{ color: '#E0E0E0' }}>◎</div>
+              <p className="text-sm" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>
                 start a conversation — every memory blooms here
               </p>
             </div>
@@ -499,23 +499,23 @@ export default function MemoryGarden({ sessionId }) {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span style={{ color: SENTIMENT_COLORS[selectedNode.sentiment]?.fill || '#635858', fontSize: 12 }}>
+                    <span style={{ color: SENTIMENT_COLORS[selectedNode.sentiment]?.fill || '#999999', fontSize: 12 }}>
                       {CATEGORY_META[selectedNode.category]?.symbol || '●'}
                     </span>
-                    <span className="text-xs uppercase tracking-widest" style={{ color: 'var(--color-text-faint)', fontFamily: 'Manrope, sans-serif' }}>
+                    <span className="text-xs uppercase tracking-widest" style={{ color: '#666666', fontFamily: 'Manrope, sans-serif' }}>
                       {selectedNode.category} · {selectedNode.sentiment}
                     </span>
                   </div>
-                  <p className="text-sm leading-relaxed" style={{ color: '#F2F0F0', fontFamily: 'Manrope, sans-serif' }}>
+                  <p className="text-sm leading-relaxed" style={{ color: '#1A1A1A', fontFamily: 'Manrope, sans-serif' }}>
                     {selectedNode.full_content || selectedNode.label}
                   </p>
                   {selectedNode.timestamp && (
-                    <p className="text-xs mt-2" style={{ color: 'var(--color-text-faint)' }}>
+                    <p className="text-xs mt-2" style={{ color: '#999999' }}>
                       {new Date(selectedNode.timestamp).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                     </p>
                   )}
                 </div>
-                <button onClick={() => setSelectedNode(null)} style={{ color: '#635858', flexShrink: 0 }}>
+                <button onClick={() => setSelectedNode(null)} style={{ color: '#999999', flexShrink: 0 }}>
                   <X size={14} />
                 </button>
               </div>
@@ -531,8 +531,8 @@ export default function MemoryGarden({ sessionId }) {
                   className="flex items-center gap-1.5 text-xs transition-opacity duration-200"
                   style={{ opacity: filterSentiment !== 'all' && filterSentiment !== s ? 0.3 : 1 }}>
                   <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: c.fill, boxShadow: `0 0 5px ${c.fill}` }} />
-                  <span style={{ color: '#635858', fontFamily: 'Manrope, sans-serif' }}>{s}</span>
-                  <span style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>({stats.bySent[s]})</span>
+                  <span style={{ color: '#666666', fontFamily: 'Manrope, sans-serif' }}>{s}</span>
+                  <span style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>({stats.bySent[s]})</span>
                 </button>
               ) : null
             )}
@@ -541,21 +541,21 @@ export default function MemoryGarden({ sessionId }) {
 
         {/* ── Right sidebar ── */}
         <div className="flex-shrink-0 flex flex-col overflow-hidden m-3 ml-2 rounded-2xl glass-panel"
-          style={{ width: sidebarOpen ? 280 : 36, transition: 'width 0.3s ease', border: '1px solid rgba(255,255,255,0.05)' }}>
+          style={{ width: sidebarOpen ? 280 : 36, transition: 'width 0.3s ease', border: '1px solid rgba(0,0,0,0.08)' }}>
 
           {/* Sidebar toggle */}
           <button onClick={() => setSidebarOpen(v => !v)}
             className="flex items-center justify-between px-3 py-3 flex-shrink-0 transition-colors duration-200"
-            style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#635858' }}>
-            {sidebarOpen && <span className="text-xs uppercase tracking-widest" style={{ fontFamily: 'Manrope, sans-serif', color: '#635858' }}>Memories</span>}
+            style={{ borderBottom: '1px solid rgba(0,0,0,0.06)', color: '#666666' }}>
+            {sidebarOpen && <span className="text-xs uppercase tracking-widest" style={{ fontFamily: 'Manrope, sans-serif', color: '#666666' }}>Memories</span>}
             <ChevronDown size={14} style={{ transform: sidebarOpen ? 'rotate(-90deg)' : 'rotate(90deg)', transition: 'transform 0.3s' }} />
           </button>
 
           {sidebarOpen && (<>
             {/* Search */}
             <div className="px-3 pt-3 pb-2 flex-shrink-0">
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <Search size={12} style={{ color: '#635858', flexShrink: 0 }} />
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.06)' }}>
+                <Search size={12} style={{ color: '#999999', flexShrink: 0 }} />
                 <input
                   data-testid="memory-search-input"
                   type="text"
@@ -563,9 +563,9 @@ export default function MemoryGarden({ sessionId }) {
                   onChange={e => setSearchTerm(e.target.value)}
                   placeholder="search memories..."
                   className="bg-transparent outline-none w-full"
-                  style={{ fontSize: 12, color: '#F2F0F0', fontFamily: 'Manrope, sans-serif' }}
+                  style={{ fontSize: 12, color: '#1A1A1A', fontFamily: 'Manrope, sans-serif' }}
                 />
-                {searchTerm && <button onClick={() => setSearchTerm('')}><X size={10} style={{ color: '#635858' }} /></button>}
+                {searchTerm && <button onClick={() => setSearchTerm('')}><X size={10} style={{ color: '#999999' }} /></button>}
               </div>
             </div>
 
@@ -579,11 +579,11 @@ export default function MemoryGarden({ sessionId }) {
                   return (
                     <div key={k} className="flex items-center gap-2">
                       <span style={{ color: v.color, fontSize: 10, width: 10, flexShrink: 0 }}>{v.symbol}</span>
-                      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.06)' }}>
                         <div className="h-full rounded-full transition-all duration-700"
-                          style={{ width: `${pct}%`, background: v.color, opacity: 0.7 }} />
+                          style={{ width: `${pct}%`, background: v.color, opacity: 0.8 }} />
                       </div>
-                      <span style={{ color: '#3a2828', fontSize: 10, fontFamily: 'Manrope, sans-serif', minWidth: 16, textAlign: 'right' }}>{count}</span>
+                      <span style={{ color: '#666666', fontSize: 10, fontFamily: 'Manrope, sans-serif', minWidth: 16, textAlign: 'right' }}>{count}</span>
                     </div>
                   );
                 })}
@@ -591,9 +591,9 @@ export default function MemoryGarden({ sessionId }) {
             </div>
 
             {/* Memory list */}
-            <div className="flex-1 overflow-y-auto px-2 pb-3 space-y-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+            <div className="flex-1 overflow-y-auto px-2 pb-3 space-y-1.5" style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
               {filteredMemories.length === 0 ? (
-                <p className="text-xs text-center pt-6" style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>
+                <p className="text-xs text-center pt-6" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>
                   {searchTerm ? 'no matches' : 'no memories yet'}
                 </p>
               ) : filteredMemories.map(mem => (
@@ -605,22 +605,22 @@ export default function MemoryGarden({ sessionId }) {
                   }}
                   className="w-full text-left p-2.5 rounded-lg transition-colors duration-150 group"
                   style={{
-                    background: selectedNode?.id === mem.id ? 'rgba(200,16,46,0.1)' : 'rgba(255,255,255,0.02)',
-                    border: `1px solid ${selectedNode?.id === mem.id ? 'rgba(200,16,46,0.2)' : 'rgba(255,255,255,0.04)'}`,
+                    background: selectedNode?.id === mem.id ? 'rgba(255,107,157,0.1)' : 'rgba(0,0,0,0.02)',
+                    border: `1px solid ${selectedNode?.id === mem.id ? 'rgba(255,107,157,0.25)' : 'rgba(0,0,0,0.06)'}`,
                     marginTop: '6px'
                   }}>
                   <div className="flex items-center gap-1.5 mb-1">
-                    <span style={{ color: CATEGORY_META[mem.category]?.color || '#635858', fontSize: 9 }}>
+                    <span style={{ color: CATEGORY_META[mem.category]?.color || '#999999', fontSize: 9 }}>
                       {CATEGORY_META[mem.category]?.symbol}
                     </span>
                     <div className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                      style={{ background: SENTIMENT_COLORS[mem.sentiment]?.fill || '#635858' }} />
-                    <span className="text-xs" style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>
+                      style={{ background: SENTIMENT_COLORS[mem.sentiment]?.fill || '#999999' }} />
+                    <span className="text-xs" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>
                       {new Date(mem.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </span>
                   </div>
                   <p className="text-xs leading-relaxed line-clamp-2"
-                    style={{ color: selectedNode?.id === mem.id ? '#F2F0F0' : '#7a6060', fontFamily: 'Manrope, sans-serif' }}>
+                    style={{ color: selectedNode?.id === mem.id ? '#1A1A1A' : '#666666', fontFamily: 'Manrope, sans-serif' }}>
                     {mem.content}
                   </p>
                 </button>
