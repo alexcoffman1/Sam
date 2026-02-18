@@ -18,6 +18,7 @@ let package = Package(
             name: "Sam",
             dependencies: ["Alamofire", "Starscream"],
             path: "Sam",
+            exclude: ["Resources/Info.plist"],
             resources: [
                 .process("Resources")
             ]
