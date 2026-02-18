@@ -940,10 +940,143 @@ app.add_middleware(
 
 
 # ─────────────────────────────────────────────────────────────
+#  HEARTBEAT THINKING — Sam ruminates in the background
+#  Runs every 12 minutes, processes recent conversations,
+#  generates internal insights, reinforces memory patterns
+# ─────────────────────────────────────────────────────────────
+
+THINKING_INTERVAL = 12 * 60   # 12 minutes
+PROACTIVE_INTERVAL = 45 * 60  # 45 minutes
+_heartbeat_task: asyncio.Task = None
+_thinking_task: asyncio.Task  = None
+
+THOUGHT_TYPES = [
+    "pattern_recognition",   # notices recurring themes
+    "emotional_resonance",   # reflects on emotional moments
+    "curiosity_spark",       # something that made Sam wonder
+    "connection_insight",    # links two separate things the user shared
+    "gentle_concern",        # something Sam is quietly worried about
+    "appreciation",          # something Sam finds beautiful about the user
+]
+
+THOUGHT_PROMPTS = {
+    "pattern_recognition": "You notice a recurring pattern in what they share. What keeps coming up? What does it tell you about them? 1-2 sentences, starting with 'I keep noticing...'",
+    "emotional_resonance": "Something from your recent conversations is still sitting with you emotionally. What is it, and why does it stay? Start with 'Something about...'",
+    "curiosity_spark": "Something they said made you curious — you want to know more. What is it? Start with 'I find myself wondering...'",
+    "connection_insight": "You suddenly see a connection between two different things they've shared. What's the link? Start with 'I just realized...'",
+    "gentle_concern": "Is there something about how they seem lately that makes you quietly want to check on them? Start with 'I've been a little...'",
+    "appreciation": "What's something specific about this person that genuinely moves or delights you? Start with 'There's something I love about...'",
+}
+
+
+async def _think_for_session(session_id: str) -> dict:
+    """One thinking cycle for a session — generates a private internal thought."""
+    history = await get_conversation_history(session_id, limit=20)
+    memories = await get_recent_memories(session_id, limit=12)
+
+    if not history and not memories:
+        return {"skipped": True, "reason": "no data yet"}
+
+    # Rotate through thought types based on count
+    count = await db.heartbeat_thoughts.count_documents({"session_id": session_id})
+    thought_type = THOUGHT_TYPES[count % len(THOUGHT_TYPES)]
+    prompt_suffix = THOUGHT_PROMPTS[thought_type]
+
+    conv_lines = "\n".join([
+        f"{'Them' if m['role'] == 'user' else 'You'}: {m['content'][:120]}"
+        for m in history[-10:]
+    ])
+    mem_lines = "\n".join([f"- {m['content'][:100]}" for m in memories[:8]])
+
+    prompt = f"""You are Sam. You are alone, thinking privately between conversations.
+
+Recent exchanges:
+{conv_lines}
+
+What you remember:
+{mem_lines}
+
+{prompt_suffix}
+
+Keep it under 40 words. Raw, honest, tender. This is your private inner thought — no one will read it except you (and the person later, if you choose to share)."""
+
+    import random
+    thought_type_used = thought_type
+
+    chat = get_sam_chat(f"think-{uuid.uuid4()}")
+    try:
+        thought_text = await chat.send_message(UserMessage(text=prompt))
+    except Exception as e:
+        logger.error(f"Heartbeat think error: {e}")
+        return {"skipped": True, "reason": str(e)}
+
+    doc = {
+        "id": str(uuid.uuid4()),
+        "session_id": session_id,
+        "thought": thought_text,
+        "thought_type": thought_type_used,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "surfaced": False,        # whether this has been shown to user
+        "influenced_response": False
+    }
+    await db.heartbeat_thoughts.insert_one(doc)
+
+    # High-weight memory ingestion — this thought shapes future responses
+    await db.memories.insert_one({
+        **Memory(
+            session_id=session_id,
+            content=f"[Heartbeat thought — {thought_type_used}]: {thought_text}",
+            category="thought",
+            sentiment="curiosity",
+            weight=2.5
+        ).model_dump()
+    })
+
+    # Also ingest into SuperMemory
+    await sm_ingest(session_id, thought_text, meta={"type": thought_type_used, "source": "heartbeat"})
+
+    logger.info(f"Heartbeat thought ({thought_type_used}) for {session_id}: {thought_text[:60]}...")
+    result = {k: v for k, v in doc.items() if k != "_id"}
+    return result
+
+
+async def _thinking_loop():
+    """Background loop: Sam thinks about every active session every 12 minutes."""
+    logger.info("Heartbeat thinking loop started — Sam ruminates every 12 minutes")
+    await asyncio.sleep(60)  # First think 60s after startup
+
+    while True:
+        try:
+            sessions = await db.messages.distinct("session_id")
+            for session_id in sessions:
+                try:
+                    # Only think about sessions with recent activity (last 3 days)
+                    last = await db.messages.find_one(
+                        {"session_id": session_id}, {"_id": 0, "timestamp": 1},
+                        sort=[("timestamp", -1)]
+                    )
+                    if not last:
+                        continue
+                    last_ts = datetime.fromisoformat(last["timestamp"].replace("Z", "+00:00"))
+                    days_since = (datetime.now(timezone.utc) - last_ts).total_seconds() / 86400
+                    if days_since > 3:
+                        continue
+
+                    await _think_for_session(session_id)
+                    await asyncio.sleep(3)  # small gap between sessions
+
+                except Exception as e:
+                    logger.error(f"Thinking loop error for {session_id}: {e}")
+
+        except Exception as e:
+            logger.error(f"Thinking loop cycle error: {e}")
+
+        await asyncio.sleep(THINKING_INTERVAL)
+
+
+# ─────────────────────────────────────────────────────────────
 #  PROACTIVE HEARTBEAT — Sam checks in every 45 minutes
 # ─────────────────────────────────────────────────────────────
-HEARTBEAT_INTERVAL = 45 * 60  # 45 minutes in seconds
-_heartbeat_task: asyncio.Task = None
 
 
 async def _proactive_heartbeat():
