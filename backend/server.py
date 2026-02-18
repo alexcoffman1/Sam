@@ -452,12 +452,10 @@ async def root():
 @api_router.post("/chat", response_model=ChatResponse)
 async def chat_with_sam(req: ChatRequest):
     session_id = req.session_id
-    context = await build_context_prompt(session_id, req.message)
-    chat = get_sam_chat(f"{session_id}-{uuid.uuid4()}")
-    user_message = UserMessage(text=context)
+    messages = await build_messages(session_id, req.message)
 
     try:
-        response_text = await chat.send_message(user_message)
+        response_text = await call_sam(messages)
     except Exception as e:
         logger.error(f"LLM error: {e}")
         raise HTTPException(status_code=500, detail="Sam is having a moment. Try again?")
