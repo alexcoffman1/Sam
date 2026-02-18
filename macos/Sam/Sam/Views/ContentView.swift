@@ -41,7 +41,8 @@ struct ContentView: View {
                     .padding(.bottom, 16)
             }
         }
-        .frame(width: 400, minHeight: 360, maxHeight: 700)
+        .frame(width: 400)
+        .frame(minHeight: 360, maxHeight: 700)
         .background(
             RoundedRectangle(cornerRadius: 24)
                 .fill(.ultraThinMaterial)
