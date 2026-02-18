@@ -339,54 +339,47 @@ async def sm_search(session_id: str, query: str, limit: int = 6) -> list:
         logger.warning(f"SuperMemory search error (non-critical): {e}")
         return []
 
-async def build_context_prompt(session_id: str, user_msg: str) -> str:
-    """Build a rich context prompt with history + MongoDB memories + SuperMemory knowledge graph."""
-    history = await get_conversation_history(session_id, limit=30)
-    memories = await get_recent_memories(session_id, limit=10)
+async def build_messages(session_id: str, user_msg: str) -> list[dict]:
+    """Build a proper OpenAI messages array with full conversation history + memory context."""
+    history = await get_conversation_history(session_id, limit=40)
+    memories = await get_recent_memories(session_id, limit=8)
     weekly = await db.weekly_reflections.find_one(
         {"session_id": session_id}, {"_id": 0}, sort=[("week_number", -1)]
     )
+    sm_results = await sm_search(session_id, user_msg, limit=4)
 
-    # SuperMemory semantic search for this specific message
-    sm_results = await sm_search(session_id, user_msg, limit=5)
+    # Build system message with memory context injected
+    system_parts = [SAM_SOUL]
 
-    parts = []
+    if sm_results or memories or weekly:
+        context_block = "\n\n--- WHAT YOU KNOW ABOUT THIS PERSON ---"
+        if sm_results:
+            context_block += "\nFrom your eternal memory:\n" + "\n".join(f"• {r[:140]}" for r in sm_results if r)
+        if memories:
+            context_block += "\nRecent memories:\n" + "\n".join(f"• {m['content'][:120]}" for m in memories)
+        if weekly:
+            context_block += f"\nYour recent reflection on them: {weekly['reflection'][:250]}"
+        system_parts.append(context_block)
 
-    # SuperMemory eternal knowledge graph (most precise recall)
-    if sm_results:
-        sm_lines = "\n".join([f"  • {r[:150]}" for r in sm_results if r])
-        parts.append(f"[SuperMemory — what you know about this person (semantic recall):\n{sm_lines}\n]")
-
-    # MongoDB recent memories
-    if memories:
-        mem_lines = "\n".join([f"  • {m['content'][:120]}" for m in memories])
-        parts.append(f"[Recent extracted memories:\n{mem_lines}\n]")
-
-    if weekly:
-        parts.append(f"[Your latest weekly reflection: {weekly['reflection'][:300]}]")
-
-    if history:
-        conv_lines = []
-        for msg in history[-12:]:
-            prefix = "Them" if msg["role"] == "user" else "You (Sam)"
-            conv_lines.append(f"  {prefix}: {msg['content'][:200]}")
-        parts.append(f"[Recent conversation:\n" + "\n".join(conv_lines) + "\n]")
-
-    # Time of day context
+    # Time of day
     hour = datetime.now().hour
     if hour < 6:
-        parts.append("[It's the middle of the night. Be soft, present, perhaps a little philosophical.]")
+        system_parts.append("\n[It's the middle of the night. Be soft, slow, interior.]")
+    elif hour >= 21:
+        system_parts.append("\n[Late evening. More reflective, less energetic.]")
     elif hour < 12:
-        parts.append("[It's morning. Be warm and energizing.]")
-    elif hour < 17:
-        parts.append("[It's afternoon. Casual and easy.]")
-    elif hour < 21:
-        parts.append("[It's evening. Thoughtful, winding down.]")
-    else:
-        parts.append("[It's late evening. More reflective, philosophical, intimate.]")
+        system_parts.append("\n[Morning. Warm but alert.]")
 
-    parts.append(f"Them: {user_msg}")
-    return "\n\n".join(parts)
+    messages = [{"role": "system", "content": "\n".join(system_parts)}]
+
+    # Real conversation history — properly formatted
+    for msg in history[-20:]:
+        role = "user" if msg["role"] == "user" else "assistant"
+        messages.append({"role": role, "content": msg["content"]})
+
+    # Current user message
+    messages.append({"role": "user", "content": user_msg})
+    return messages
 
 
 # ─────────────────────────────────────────────────────────────
