@@ -248,7 +248,7 @@ enum MessageRole: String {
     case sam
 }
 
-struct Memory: Identifiable {
+struct Memory: Identifiable, Hashable {
     let id: String
     let content: String
     let category: String
