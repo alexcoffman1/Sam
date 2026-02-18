@@ -8,17 +8,17 @@
 @tailwind utilities;
 
 :root {
-  --color-bg: #090505;
-  --color-bg-1: #120808;
-  --color-bg-2: #1A0B0B;
-  --color-primary: #C8102E;
-  --color-secondary: #E8927C;
-  --color-accent: #F0A500;
-  --color-text: #F2F0F0;
-  --color-text-muted: #A49898;
-  --color-text-faint: #635858;
-  --orb-glow: rgba(200, 16, 46, 0.35);
-  --orb-glow-soft: rgba(232, 146, 124, 0.2);
+  --color-bg: #FFFFFF;
+  --color-bg-1: #F8F8F8;
+  --color-bg-2: #F0F0F0;
+  --color-primary: #FF6B9D;
+  --color-secondary: #FF8FB1;
+  --color-accent: #FFB6C1;
+  --color-text: #1A1A1A;
+  --color-text-muted: #666666;
+  --color-text-faint: #999999;
+  --orb-glow: rgba(255, 107, 157, 0.4);
+  --orb-glow-soft: rgba(255, 143, 177, 0.25);
 }
 
 * {

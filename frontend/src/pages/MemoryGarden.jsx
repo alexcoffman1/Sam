@@ -274,7 +274,7 @@ export default function MemoryGarden({ sessionId }) {
         } else {
           const petals = node.category === 'feeling' ? 8 : node.category === 'person' ? 5 : 6;
           const r = (node.size || 9) * (isSelected ? 1.5 : isHovered ? 1.3 : 1);
-          drawFlower(ctx, node.x, node.y, r, sc.fill, sc.glow, petals, t);
+          drawFlower(ctx, node.x, node.y, r, sc.fill, petals, t);
 
           // Selection ring
           if (isSelected) {
