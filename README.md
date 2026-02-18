@@ -215,6 +215,75 @@ The spec is **open**, **public domain**, and contains **no hidden instructions**
 
 ---
 
+## 🦞 OpenClaw / Moltbot Integration
+
+Sam includes built-in integration with **OpenClaw** (formerly Moltbot/Clawdbot) for multi-channel agent messaging.
+
+### What is OpenClaw?
+
+OpenClaw is a self-hosted AI agent backend that enables Sam to communicate across multiple platforms:
+
+- **WhatsApp** — Text Sam from your phone
+- **Telegram** — Bot integration
+- **Discord** — Server bot
+- **Slack** — Workspace integration
+
+### Setup
+
+```bash
+# Install OpenClaw CLI
+curl -fsSL https://openclaw.ai/install.sh | bash
+
+# Configure your channels
+openclaw onboard
+
+# Start the gateway
+openclaw gateway --port 18789
+```
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/openclaw/status` | GET | Check gateway and channel status |
+| `/api/openclaw/webhook` | POST | Receive messages from channels |
+| `/api/openclaw/send` | POST | Send message to a channel |
+
+### Architecture
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    EXTERNAL CHANNELS                         │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐    │
+│  │ WhatsApp │  │ Telegram │  │ Discord  │  │  Slack   │    │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘    │
+└───────┼─────────────┼─────────────┼─────────────┼───────────┘
+        │             │             │             │
+        └─────────────┴──────┬──────┴─────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │  OpenClaw       │
+                    │  Gateway        │
+                    │  (port 18789)   │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │  Sam Backend    │
+                    │  /api/openclaw/ │
+                    │  webhook        │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │  Sam's Brain    │
+                    │  (GPT-4o +      │
+                    │   Soul Prompt)  │
+                    └─────────────────┘
+```
+
+Messages from any channel flow through OpenClaw to Sam's backend, where they're processed with the same personality and memory system as the web interface.
+
+---
+
 ## 📡 API
 
 ### Core Endpoints
