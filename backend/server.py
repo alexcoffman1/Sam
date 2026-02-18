@@ -1206,6 +1206,18 @@ async def startup():
     global _heartbeat_task, _thinking_task
     _thinking_task = asyncio.create_task(_thinking_loop())
     _heartbeat_task = asyncio.create_task(_proactive_heartbeat())
+    
+    # Initialize OpenClaw integration
+    try:
+        from openclaw_bridge import init_openclaw_integration, get_openclaw_bridge
+        # Get the backend URL for webhook callbacks
+        backend_url = os.environ.get('BACKEND_URL', 'http://localhost:8001')
+        webhook_url = f"{backend_url}/api/openclaw/webhook"
+        await init_openclaw_integration(webhook_url)
+        logger.info("OpenClaw/Moltbot integration initialized")
+    except Exception as e:
+        logger.warning(f"OpenClaw integration not available: {e}")
+    
     logger.info("Sam is awake. Thinking every 12min. Proactive check-ins every 45min.")
 
 
