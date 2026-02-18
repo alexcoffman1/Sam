@@ -393,19 +393,14 @@ export default function SamPage({ sessionId }) {
             <OrbCanvas state={orbState} emotion={currentEmotion} amplitude={audioAmplitude} />
           </div>
 
-          {/* Sam title */}
-          <div className="mt-10 text-center fade-in">
-            <h1 className="text-xl font-semibold tracking-widest uppercase"
-              style={{ fontFamily: 'Outfit, sans-serif', color: '#1A1A1A', letterSpacing: '0.25em' }}>
-              Sam
-            </h1>
-            <p className="text-xs mt-1.5 tracking-widest uppercase" style={{ color: '#999999' }}>
-              {orbState === ORB_STATE.IDLE && 'Hold Space · click orb to talk'}
+          {/* Status indicator - minimal */}
+          <div className="mt-6 text-center fade-in">
+            <p className="text-xs tracking-widest uppercase" style={{ color: '#999999' }}>
+              {orbState === ORB_STATE.IDLE && 'Hold Space · click orb'}
               {orbState === ORB_STATE.LISTENING && 'Listening...'}
               {orbState === ORB_STATE.THINKING && 'Thinking...'}
-              {orbState === ORB_STATE.SPEAKING && 'Speaking — click to stop'}
+              {orbState === ORB_STATE.SPEAKING && 'Click to stop'}
             </p>
-            <HeartbeatThinkingDot sessionId={sessionId} />
           </div>
         </div>
 

@@ -12,20 +12,14 @@ export default function NavBar() {
       className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-4"
       style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.8) 70%, transparent 100%)' }}
     >
-      <Link to="/" data-testid="nav-logo" className="flex items-center gap-2 group">
+      <Link to="/" data-testid="nav-logo" className="flex items-center group">
         <div
-          className="w-7 h-7 rounded-full transition-transform duration-300 group-hover:scale-110"
+          className="w-8 h-8 rounded-full transition-transform duration-300 group-hover:scale-110"
           style={{
             background: 'radial-gradient(circle, #FFB6C1 0%, #FF6B9D 70%)',
             boxShadow: '0 0 16px 4px rgba(255,107,157,0.4)'
           }}
         />
-        <span
-          className="text-lg font-semibold tracking-wide"
-          style={{ fontFamily: 'Outfit, sans-serif', color: '#1A1A1A' }}
-        >
-          Sam
-        </span>
       </Link>
 
       <div className="flex items-center gap-1">
