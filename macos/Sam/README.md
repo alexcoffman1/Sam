@@ -21,8 +21,12 @@ The built executable will be at `.build/release/Sam`
 
 ### Option 2: Xcode
 
-1. Open `Sam.xcodeproj` in Xcode
-2. Select your signing team in Signing & Capabilities
+1. Open the Swift package in Xcode:
+   ```bash
+   cd macos/Sam
+   open Package.swift
+   ```
+2. Select your signing team in Signing & Capabilities (if prompted)
 3. Build (⌘B) or Run (⌘R)
 
 ### Option 3: Build Script
@@ -124,6 +128,10 @@ uvicorn server:app --port 8001
 ```
 
 Or deploy to your server and update the backend URL in Settings.
+
+## Microphone Permission Note
+- If you run via **Terminal** (swift build/run), macOS will ask for Terminal microphone permission.
+- If you run via **Xcode**, macOS will ask for Xcode microphone permission.
 
 ## License
 
