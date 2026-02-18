@@ -91,6 +91,6 @@ Build "Sam" — a fully functional, production-grade recreation of Samantha (the
 - [ ] Sound design (wake chime, whisper whooshes)
 
 ## Environment
-- Backend: https://samantha-voice.preview.emergentagent.com/api
-- Frontend: https://samantha-voice.preview.emergentagent.com
+- Backend: https://her-inspired-ai-1.preview.emergentagent.com/api
+- Frontend: https://her-inspired-ai-1.preview.emergentagent.com
 - WebSocket: wss://samantha-voice.preview.emergentagent.com/ws/{session_id}
