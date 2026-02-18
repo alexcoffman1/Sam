@@ -82,22 +82,22 @@ function drawHub(ctx, x, y, r, color, label, t) {
   const prev = ctx.globalAlpha;
 
   // Outer rings
-  ctx.globalAlpha = 0.12;
+  ctx.globalAlpha = 0.15;
   ctx.strokeStyle = color;
   ctx.lineWidth = 1.5;
   ctx.beginPath(); ctx.arc(x, y, pr * 2.2, 0, Math.PI * 2); ctx.stroke();
-  ctx.globalAlpha = 0.22;
+  ctx.globalAlpha = 0.25;
   ctx.beginPath(); ctx.arc(x, y, pr * 1.6, 0, Math.PI * 2); ctx.stroke();
 
   // Fill
-  ctx.globalAlpha = 0.75;
+  ctx.globalAlpha = 0.85;
   ctx.fillStyle = color;
   ctx.beginPath(); ctx.arc(x, y, pr, 0, Math.PI * 2); ctx.fill();
 
   ctx.globalAlpha = prev;
 
   // Label
-  ctx.fillStyle = '#F2F0F0';
+  ctx.fillStyle = '#FFFFFF';
   ctx.font = 'bold 11px Outfit, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -639,13 +639,13 @@ function FilterPill({ label, count, active, color, onClick }) {
     <button onClick={onClick}
       className="flex items-center gap-1 px-3 py-1 rounded-full text-xs transition-all duration-200"
       style={{
-        background: active ? (color ? `${color}18` : 'rgba(200,16,46,0.15)') : 'rgba(255,255,255,0.03)',
-        color: active ? (color || '#E8927C') : '#635858',
-        border: `1px solid ${active ? (color ? color + '40' : 'rgba(200,16,46,0.3)') : 'rgba(255,255,255,0.06)'}`,
+        background: active ? (color ? `${color}15` : 'rgba(255,107,157,0.15)') : 'rgba(0,0,0,0.03)',
+        color: active ? (color || '#FF6B9D') : '#666666',
+        border: `1px solid ${active ? (color ? color + '40' : 'rgba(255,107,157,0.3)') : 'rgba(0,0,0,0.08)'}`,
         fontFamily: 'Manrope, sans-serif'
       }}>
       {label}
-      {count !== undefined && <span style={{ color: active ? (color || '#E8927C') : '#3a2828' }}>({count})</span>}
+      {count !== undefined && <span style={{ color: active ? (color || '#FF6B9D') : '#999999' }}>({count})</span>}
     </button>
   );
 }
