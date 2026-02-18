@@ -369,8 +369,9 @@ curl -X POST "http://localhost:8001/api/chat" \
 ```
 Sam/
 ├── backend/
-│   ├── server.py          # FastAPI application
-│   ├── soul.md            # Sam's personality prompt
+│   ├── server.py              # FastAPI application
+│   ├── openclaw_bridge.py     # OpenClaw/Moltbot integration
+│   ├── soul.md                # Sam's personality prompt
 │   ├── requirements.txt
 │   └── .env.example
 ├── frontend/
@@ -386,6 +387,23 @@ Sam/
 │   │   ├── App.js
 │   │   └── index.css
 │   └── package.json
+├── macos/
+│   └── Sam/
+│       ├── Sam/
+│       │   ├── SamApp.swift       # App entry point
+│       │   ├── Models/
+│       │   │   └── SamState.swift
+│       │   ├── Services/
+│       │   │   ├── SamAPIService.swift
+│       │   │   └── AudioService.swift
+│       │   ├── Views/
+│       │   │   ├── ContentView.swift
+│       │   │   ├── AdminView.swift
+│       │   │   ├── GardenView.swift
+│       │   │   └── SettingsView.swift
+│       │   └── Resources/
+│       ├── Package.swift
+│       └── build.sh
 └── README.md
 ```
 
