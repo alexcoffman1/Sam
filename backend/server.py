@@ -931,6 +931,150 @@ async def trigger_heartbeat_think(session_id: str):
     return await _think_for_session(session_id)
 
 
+# ─────────────────────────────────────────────────────────────
+#  OPENCLAW/MOLTBOT INTEGRATION — Multi-channel agent support
+# ─────────────────────────────────────────────────────────────
+
+class OpenClawMessage(BaseModel):
+    """Incoming message from OpenClaw webhook"""
+    channel: str  # whatsapp, telegram, discord, slack
+    sender_id: str
+    message: str
+    metadata: Optional[dict] = None
+
+class OpenClawSendRequest(BaseModel):
+    """Request to send message via OpenClaw"""
+    channel: str
+    target: str
+    message: str
+
+@api_router.post("/openclaw/webhook")
+async def openclaw_webhook(payload: dict):
+    """
+    Receive incoming messages from OpenClaw gateway.
+    Messages from WhatsApp, Telegram, Discord, etc. come here.
+    """
+    try:
+        channel = payload.get("channel", "unknown")
+        sender_id = payload.get("sender_id") or payload.get("from", "")
+        message_text = payload.get("message") or payload.get("text", "")
+        
+        if not message_text:
+            return {"status": "ignored", "reason": "empty message"}
+        
+        # Create a session ID based on channel and sender
+        session_id = f"{channel}-{sender_id}"
+        
+        logger.info(f"OpenClaw message from {channel}/{sender_id}: {message_text[:50]}...")
+        
+        # Process through Sam's chat endpoint
+        response = await chat_with_sam_internal(session_id, message_text)
+        
+        # Send response back through OpenClaw
+        try:
+            from openclaw_bridge import get_openclaw_bridge
+            bridge = get_openclaw_bridge()
+            await bridge.send_message(
+                channel=channel,
+                target=sender_id,
+                message=response["response"]
+            )
+        except Exception as e:
+            logger.warning(f"Could not send via OpenClaw: {e}")
+        
+        return {
+            "status": "processed",
+            "session_id": session_id,
+            "response": response["response"]
+        }
+        
+    except Exception as e:
+        logger.error(f"OpenClaw webhook error: {e}")
+        return {"status": "error", "error": str(e)}
+
+@api_router.post("/openclaw/send")
+async def openclaw_send_message(request: OpenClawSendRequest):
+    """Send a message to a specific channel via OpenClaw."""
+    try:
+        from openclaw_bridge import get_openclaw_bridge
+        bridge = get_openclaw_bridge()
+        
+        result = await bridge.send_message(
+            channel=request.channel,
+            target=request.target,
+            message=request.message
+        )
+        
+        if result:
+            return {"status": "sent", "result": result}
+        else:
+            raise HTTPException(status_code=503, detail="OpenClaw gateway unavailable")
+            
+    except ImportError:
+        raise HTTPException(status_code=503, detail="OpenClaw not installed")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/openclaw/status")
+async def openclaw_status():
+    """Get OpenClaw gateway and channel status."""
+    try:
+        from openclaw_bridge import get_openclaw_bridge
+        bridge = get_openclaw_bridge()
+        
+        health = await bridge.check_gateway_health()
+        channels = await bridge.get_channel_status() if health else {}
+        
+        return {
+            "gateway_running": health,
+            "channels": channels,
+            "version": "2026.2.17"
+        }
+    except ImportError:
+        return {
+            "gateway_running": False,
+            "channels": {},
+            "error": "OpenClaw bridge not installed"
+        }
+    except Exception as e:
+        return {
+            "gateway_running": False,
+            "channels": {},
+            "error": str(e)
+        }
+
+
+async def chat_with_sam_internal(session_id: str, message: str) -> dict:
+    """Internal helper to process a chat message through Sam."""
+    # Store user message
+    user_msg = Message(session_id=session_id, role="user", content=message)
+    await db.messages.insert_one({**user_msg.model_dump()})
+    
+    # Get context
+    history = await get_conversation_history(session_id)
+    memories = await get_recent_memories(session_id)
+    sm_results = await sm_search(session_id, message)
+    
+    # Build messages for Sam
+    messages = build_messages(history, memories, sm_results)
+    
+    # Get Sam's response
+    response_text, emotion = await call_sam(messages)
+    
+    # Store Sam's response
+    sam_msg = Message(session_id=session_id, role="sam", content=response_text, emotion=emotion)
+    await db.messages.insert_one({**sam_msg.model_dump()})
+    
+    # Memory extraction
+    asyncio.create_task(extract_and_store_memories(session_id, message, response_text))
+    
+    return {
+        "response": response_text,
+        "emotion": emotion,
+        "session_id": session_id
+    }
+
+
 app.include_router(api_router)
 
 app.add_middleware(
