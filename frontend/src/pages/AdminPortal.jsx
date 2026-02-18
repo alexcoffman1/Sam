@@ -351,31 +351,31 @@ export default function AdminPortal({ sessionId }) {
 
             {/* Weekly reflections */}
             <div className="glass-panel rounded-2xl p-6">
-              <h3 className="text-base font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
+              <h3 className="text-base font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1A1A1A' }}>
                 Weekly Reflections ({reflections.length})
               </h3>
               {reflections.length === 0 ? (
-                <p className="text-sm text-center py-4" style={{ color: '#635858', fontFamily: 'Manrope, sans-serif' }}>
+                <p className="text-sm text-center py-4" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>
                   No reflections yet — generate one from Overview
                 </p>
               ) : (
                 <div className="space-y-4">
                   {reflections.map(r => (
                     <div key={r.id} data-testid="reflection-item" className="p-4 rounded-xl"
-                      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                      style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.06)' }}>
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-xs uppercase tracking-widest" style={{ color: '#635858', fontFamily: 'Manrope, sans-serif' }}>
+                        <span className="text-xs uppercase tracking-widest" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>
                           Week {r.week_number}
                         </span>
-                        <span className="text-xs" style={{ color: '#3a2828' }}>
+                        <span className="text-xs" style={{ color: '#CCCCCC' }}>
                           {new Date(r.timestamp).toLocaleDateString()}
                         </span>
                       </div>
-                      <p className="text-sm italic mb-2" style={{ color: '#A49898', fontFamily: 'Manrope, sans-serif' }}>
+                      <p className="text-sm italic mb-2" style={{ color: '#666666', fontFamily: 'Manrope, sans-serif' }}>
                         {r.reflection}
                       </p>
                       {r.personality_notes && (
-                        <p className="text-xs" style={{ color: '#635858', fontFamily: 'Manrope, sans-serif' }}>
+                        <p className="text-xs" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>
                           Evolution: {r.personality_notes}
                         </p>
                       )}
@@ -387,11 +387,11 @@ export default function AdminPortal({ sessionId }) {
 
             {/* Proactive messages */}
             <div className="glass-panel rounded-2xl p-6">
-              <h3 className="text-base font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
+              <h3 className="text-base font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1A1A1A' }}>
                 Proactive Messages ({proactiveMessages.length})
               </h3>
               {proactiveMessages.length === 0 ? (
-                <p className="text-sm text-center py-4" style={{ color: '#635858', fontFamily: 'Manrope, sans-serif' }}>
+                <p className="text-sm text-center py-4" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>
                   No proactive messages yet
                 </p>
               ) : (
@@ -399,11 +399,11 @@ export default function AdminPortal({ sessionId }) {
                   {proactiveMessages.map(pm => (
                     <div key={pm.id} data-testid="proactive-item"
                       className="p-3 rounded-xl"
-                      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
-                      <p className="text-sm italic" style={{ color: '#A49898', fontFamily: 'Manrope, sans-serif' }}>
+                      style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.06)' }}>
+                      <p className="text-sm italic" style={{ color: '#666666', fontFamily: 'Manrope, sans-serif' }}>
                         "{pm.content}"
                       </p>
-                      <p className="text-xs mt-1" style={{ color: '#3a2828' }}>{pm.trigger} · {new Date(pm.timestamp).toLocaleDateString()}</p>
+                      <p className="text-xs mt-1" style={{ color: '#999999' }}>{pm.trigger} · {new Date(pm.timestamp).toLocaleDateString()}</p>
                     </div>
                   ))}
                 </div>
@@ -412,11 +412,11 @@ export default function AdminPortal({ sessionId }) {
 
             {/* Memories */}
             <div className="glass-panel rounded-2xl p-6">
-              <h3 className="text-base font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
+              <h3 className="text-base font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1A1A1A' }}>
                 Memory Bank ({memories.length})
               </h3>
               {memories.length === 0 ? (
-                <p className="text-sm text-center py-4" style={{ color: '#635858', fontFamily: 'Manrope, sans-serif' }}>
+                <p className="text-sm text-center py-4" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>
                   Start a conversation to build memories
                 </p>
               ) : (
@@ -424,19 +424,19 @@ export default function AdminPortal({ sessionId }) {
                   {memories.map(mem => (
                     <div key={mem.id} data-testid="memory-item"
                       className="flex items-start gap-3 p-3 rounded-xl"
-                      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                      style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.06)' }}>
                       <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{
-                        background: mem.sentiment === 'love' ? '#C8102E'
-                          : mem.sentiment === 'joy' ? '#F0A500'
+                        background: mem.sentiment === 'love' ? '#E84B8A'
+                          : mem.sentiment === 'joy' ? '#FFB347'
                           : mem.sentiment === 'sadness' ? '#60A5FA'
-                          : mem.sentiment === 'curiosity' ? '#E8927C'
-                          : '#635858'
+                          : mem.sentiment === 'curiosity' ? '#FF8FB1'
+                          : '#999999'
                       }} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm" style={{ color: '#A49898', fontFamily: 'Manrope, sans-serif' }}>{mem.content}</p>
+                        <p className="text-sm" style={{ color: '#666666', fontFamily: 'Manrope, sans-serif' }}>{mem.content}</p>
                         <div className="flex items-center gap-3 mt-0.5">
-                          <span className="text-xs" style={{ color: '#635858' }}>{mem.category}</span>
-                          <span className="text-xs" style={{ color: '#3a2828' }}>{new Date(mem.timestamp).toLocaleDateString()}</span>
+                          <span className="text-xs" style={{ color: '#999999' }}>{mem.category}</span>
+                          <span className="text-xs" style={{ color: '#CCCCCC' }}>{new Date(mem.timestamp).toLocaleDateString()}</span>
                         </div>
                       </div>
                     </div>
