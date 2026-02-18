@@ -380,19 +380,6 @@ export default function SamPage({ sessionId }) {
       {/* Vignette */}
       <div className={`vignette ${isVoiceActive ? 'vignette-active' : ''}`} />
 
-      {/* WS indicator */}
-      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50">
-        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full glass-panel">
-          <div className="w-1.5 h-1.5 rounded-full" style={{
-            background: wsConnected ? '#34D399' : '#635858',
-            boxShadow: wsConnected ? '0 0 6px #34D399' : 'none'
-          }} />
-          <span className="text-xs" style={{ color: 'var(--color-text-faint)', fontFamily: 'Manrope, sans-serif' }}>
-            {wsConnected ? 'live' : 'connecting'}
-          </span>
-        </div>
-      </div>
-
       {/* Main layout */}
       <div className="relative flex-1 flex flex-col items-center overflow-hidden" style={{ zIndex: 10, paddingTop: '64px' }}>
 
