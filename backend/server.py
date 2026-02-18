@@ -1208,7 +1208,9 @@ async def startup():
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
-    global _heartbeat_task
+    global _heartbeat_task, _thinking_task
+    if _thinking_task:
+        _thinking_task.cancel()
     if _heartbeat_task:
         _heartbeat_task.cancel()
     client.close()
