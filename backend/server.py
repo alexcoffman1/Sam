@@ -405,16 +405,13 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                 if text.strip():
                     # Notify orb → thinking
                     await websocket.send_json({"type": "orb_state", "state": "thinking"})
-                    
-                    context = await build_context_prompt(session_id, text)
-                    chat = get_sam_chat(f"{session_id}-{uuid.uuid4()}")
-                    user_message = UserMessage(text=context)
-                    
+
+                    messages = await build_messages(session_id, text)
                     try:
-                        response_text = await chat.send_message(user_message)
+                        response_text = await call_sam(messages)
                     except Exception as e:
                         logger.error(f"LLM error: {e}")
-                        response_text = "Hmm, I got a little lost there... can you say that again?"
+                        response_text = "I got a little turned around... say that again?"
 
                     emotion = detect_emotion(response_text)
                     ts = datetime.now(timezone.utc).isoformat()
