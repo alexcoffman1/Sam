@@ -4,33 +4,33 @@ import React, { useEffect, useRef, useMemo } from 'react';
 const ORB_STATES = {
   idle: {
     scale: 1,
-    glow: 'rgba(200,16,46,0.35)',
-    glowSoft: 'rgba(232,146,124,0.15)',
-    gradient: 'radial-gradient(circle at 35% 35%, #E8927C 0%, #C8102E 50%, #7A0A1A 100%)',
+    glow: 'rgba(255,107,157,0.4)',
+    glowSoft: 'rgba(255,143,177,0.2)',
+    gradient: 'radial-gradient(circle at 35% 35%, #FFB6C1 0%, #FF6B9D 50%, #E84B8A 100%)',
     animClass: 'orb-idle',
     label: ''
   },
   listening: {
     scale: 1.08,
-    glow: 'rgba(232,146,124,0.55)',
-    glowSoft: 'rgba(240,165,0,0.2)',
-    gradient: 'radial-gradient(circle at 35% 35%, #F0D0B0 0%, #E8927C 40%, #C8102E 100%)',
+    glow: 'rgba(255,143,177,0.55)',
+    glowSoft: 'rgba(255,182,193,0.25)',
+    gradient: 'radial-gradient(circle at 35% 35%, #FFD4E0 0%, #FF8FB1 40%, #FF6B9D 100%)',
     animClass: 'orb-listening',
     label: 'Listening...'
   },
   speaking: {
     scale: 1.05,
-    glow: 'rgba(200,16,46,0.6)',
-    glowSoft: 'rgba(232,146,124,0.3)',
-    gradient: 'radial-gradient(circle at 40% 30%, #F5B8A0 0%, #E8927C 30%, #C8102E 70%, #6A0818 100%)',
+    glow: 'rgba(255,107,157,0.55)',
+    glowSoft: 'rgba(255,143,177,0.3)',
+    gradient: 'radial-gradient(circle at 40% 30%, #FFCAD9 0%, #FF8FB1 30%, #FF6B9D 70%, #E84B8A 100%)',
     animClass: 'orb-speaking',
     label: 'Speaking...'
   },
   thinking: {
     scale: 1.02,
-    glow: 'rgba(240,165,0,0.45)',
-    glowSoft: 'rgba(200,16,46,0.2)',
-    gradient: 'radial-gradient(circle at 35% 35%, #F0D080 0%, #F0A500 40%, #C8102E 100%)',
+    glow: 'rgba(255,182,193,0.5)',
+    glowSoft: 'rgba(255,107,157,0.25)',
+    gradient: 'radial-gradient(circle at 35% 35%, #FFE0E8 0%, #FFB6C1 40%, #FF6B9D 100%)',
     animClass: 'orb-thinking',
     label: 'Thinking...'
   }
@@ -47,7 +47,7 @@ function Particle({ emotion }) {
       delay: Math.random() * 0.6,
       size: 6 + Math.random() * 8,
       emoji: emotion === 'laughing' ? '✦' : emotion === 'affectionate' ? '♡' : '·',
-      color: emotion === 'thinking' ? '#F0A500' : '#E8927C'
+      color: emotion === 'thinking' ? '#FF8FB1' : '#FF6B9D'
     }));
   }, [emotion]);
 
@@ -197,7 +197,7 @@ function RippleRing({ delay }) {
         width: 200,
         height: 200,
         borderRadius: '50%',
-        border: '2px solid rgba(232,146,124,0.4)',
+        border: '2px solid rgba(255,107,157,0.4)',
         animation: `ripple 2s ease-out ${delay}s infinite`,
         zIndex: 15
       }}
