@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Flower2, Settings, MessageCircle, Plug } from 'lucide-react';
 
 export default function NavBar({ onConnectClick }) {
   const location = useLocation();
-  const isActive = (path) => location.pathname === path;
 
   return (
     <nav
@@ -22,41 +21,41 @@ export default function NavBar({ onConnectClick }) {
         />
       </Link>
 
-      <div className="flex items-center gap-2">
-        <NavLink to="/" icon={<MessageCircle size={14} />} label="Chat" isActive={isActive('/')} testId="nav-chat" />
+      <div className="flex items-center gap-4">
+        <NavLink to="/" icon={<MessageCircle size={14} />} label="Chat" testId="nav-chat" />
         
         <button
           data-testid="connect-to-sam-btn"
           onClick={onConnectClick}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all duration-200"
+          className="flex items-center gap-1.5 transition-colors duration-200 hover:opacity-70"
           style={{
-            color: '#FFFFFF',
-            background: 'linear-gradient(135deg, #FF6B9D 0%, #FF8FB1 100%)',
-            boxShadow: '0 2px 6px rgba(255,107,157,0.25)',
+            color: '#666666',
             fontFamily: 'Manrope, sans-serif',
-            fontSize: '13px'
+            fontSize: '13px',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer'
           }}
         >
-          <Plug size={12} />
+          <Plug size={14} />
           <span>Connect</span>
         </button>
         
-        <NavLink to="/garden" icon={<Flower2 size={14} />} label="Garden" isActive={isActive('/garden')} testId="nav-garden" />
-        <NavLink to="/admin" icon={<Settings size={14} />} label="Admin" isActive={isActive('/admin')} testId="nav-admin" />
+        <NavLink to="/garden" icon={<Flower2 size={14} />} label="Garden" testId="nav-garden" />
+        <NavLink to="/admin" icon={<Settings size={14} />} label="Admin" testId="nav-admin" />
       </div>
     </nav>
   );
 }
 
-function NavLink({ to, icon, label, isActive, testId }) {
+function NavLink({ to, icon, label, testId }) {
   return (
     <Link
       to={to}
       data-testid={testId}
-      className="flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-colors duration-200"
+      className="flex items-center gap-1.5 transition-colors duration-200 hover:opacity-70"
       style={{
-        color: isActive ? '#FF6B9D' : '#666666',
-        background: isActive ? 'rgba(255,107,157,0.1)' : 'transparent',
+        color: '#666666',
         fontFamily: 'Manrope, sans-serif',
         fontSize: '13px'
       }}
