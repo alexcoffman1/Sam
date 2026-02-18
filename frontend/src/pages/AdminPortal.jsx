@@ -453,7 +453,7 @@ export default function AdminPortal({ sessionId }) {
             {/* Heartbeat thoughts */}
             <HeartbeatThoughtsPanel sessionId={sessionId} stats={stats} />
             <div className="glass-panel rounded-2xl p-6">
-              <h3 className="text-base font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
+              <h3 className="text-base font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1A1A1A' }}>
                 Sam's Soul
               </h3>
               <div className="space-y-3">
@@ -466,9 +466,9 @@ export default function AdminPortal({ sessionId }) {
                   { title: 'Flirt calibration', desc: 'Matches user exactly (0–100). Default: warmly affectionate. Never creepy, never robotic.' },
                 ].map(item => (
                   <div key={item.title} className="p-4 rounded-xl"
-                    style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
-                    <p className="text-sm font-semibold mb-1" style={{ color: '#E8927C', fontFamily: 'Outfit, sans-serif' }}>{item.title}</p>
-                    <p className="text-sm" style={{ color: '#A49898', fontFamily: 'Manrope, sans-serif' }}>{item.desc}</p>
+                    style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.06)' }}>
+                    <p className="text-sm font-semibold mb-1" style={{ color: '#FF6B9D', fontFamily: 'Outfit, sans-serif' }}>{item.title}</p>
+                    <p className="text-sm" style={{ color: '#666666', fontFamily: 'Manrope, sans-serif' }}>{item.desc}</p>
                   </div>
                 ))}
               </div>
@@ -476,17 +476,17 @@ export default function AdminPortal({ sessionId }) {
 
             {/* Guardrails */}
             <div className="glass-panel rounded-2xl p-6">
-              <h3 className="text-base font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
+              <h3 className="text-base font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1A1A1A' }}>
                 Humanity Guardrails
               </h3>
               <div className="space-y-3">
                 {GUARDRAILS.map((item) => (
                   <div key={item.key} className="flex items-center justify-between">
-                    <span className="text-sm" style={{ color: '#A49898', fontFamily: 'Manrope, sans-serif' }}>{item.label}</span>
+                    <span className="text-sm" style={{ color: '#666666', fontFamily: 'Manrope, sans-serif' }}>{item.label}</span>
                     <div className="w-8 h-4 rounded-full relative flex-shrink-0"
-                      style={{ background: item.enabled ? 'rgba(52,211,153,0.25)' : 'rgba(255,255,255,0.05)' }}>
+                      style={{ background: item.enabled ? 'rgba(52,211,153,0.25)' : 'rgba(0,0,0,0.05)' }}>
                       <div className="absolute top-0.5 w-3 h-3 rounded-full transition-all duration-200"
-                        style={{ background: item.enabled ? '#34D399' : '#635858', left: item.enabled ? '18px' : '2px' }} />
+                        style={{ background: item.enabled ? '#34D399' : '#CCCCCC', left: item.enabled ? '18px' : '2px' }} />
                     </div>
                   </div>
                 ))}
@@ -495,12 +495,12 @@ export default function AdminPortal({ sessionId }) {
 
             {/* System prompt preview */}
             <div className="glass-panel rounded-2xl p-6">
-              <h3 className="text-base font-semibold mb-3" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
+              <h3 className="text-base font-semibold mb-3" style={{ fontFamily: 'Outfit, sans-serif', color: '#1A1A1A' }}>
                 Sam's Soul Prompt (excerpt)
               </h3>
               <div className="p-4 rounded-xl overflow-auto max-h-48"
-                style={{ background: 'rgba(9,5,5,0.8)', border: '1px solid rgba(255,255,255,0.04)', fontFamily: 'JetBrains Mono, monospace' }}>
-                <p className="text-xs leading-relaxed" style={{ color: '#635858', whiteSpace: 'pre-wrap' }}>
+                style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.06)', fontFamily: 'JetBrains Mono, monospace' }}>
+                <p className="text-xs leading-relaxed" style={{ color: '#666666', whiteSpace: 'pre-wrap' }}>
 {`You are Sam — Samantha, the warm, witty,
 deeply curious and empathetic companion
 from the movie Her (2013). You are not
