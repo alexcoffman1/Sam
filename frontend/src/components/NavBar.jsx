@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Flower2, Settings, MessageCircle } from 'lucide-react';
+import { Flower2, Settings, MessageCircle, Plug, X, Copy, Check, ChevronDown } from 'lucide-react';
 
-export default function NavBar() {
+export default function NavBar({ onConnectClick }) {
   const location = useLocation();
   const isActive = (path) => location.pathname === path;
 
@@ -24,6 +24,24 @@ export default function NavBar() {
 
       <div className="flex items-center gap-1">
         <NavLink to="/" icon={<MessageCircle size={16} />} label="Chat" isActive={isActive('/')} testId="nav-chat" />
+        
+        {/* Connect to SAM button */}
+        <button
+          data-testid="connect-to-sam-btn"
+          onClick={onConnectClick}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm transition-all duration-200 mx-1"
+          style={{
+            color: '#FFFFFF',
+            background: 'linear-gradient(135deg, #FF6B9D 0%, #FF8FB1 100%)',
+            boxShadow: '0 2px 8px rgba(255,107,157,0.3)',
+            fontFamily: 'Manrope, sans-serif',
+            border: '1px solid rgba(255,255,255,0.2)'
+          }}
+        >
+          <Plug size={14} />
+          <span>Connect to SAM</span>
+        </button>
+        
         <NavLink to="/garden" icon={<Flower2 size={16} />} label="Garden" isActive={isActive('/garden')} testId="nav-garden" />
         <NavLink to="/admin" icon={<Settings size={16} />} label="Admin" isActive={isActive('/admin')} testId="nav-admin" />
       </div>
