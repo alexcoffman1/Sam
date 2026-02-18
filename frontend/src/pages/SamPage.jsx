@@ -538,8 +538,8 @@ function MessageBubble({ message, index }) {
     >
       {isProactive && (
         <div className="flex items-center gap-1 mb-1">
-          <Sparkles size={10} style={{ color: 'var(--color-secondary)' }} />
-          <span className="text-xs" style={{ color: 'var(--color-text-faint)', fontFamily: 'Manrope, sans-serif' }}>
+          <Sparkles size={10} style={{ color: '#FF6B9D' }} />
+          <span className="text-xs" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>
             sam reached out
           </span>
         </div>
@@ -548,7 +548,7 @@ function MessageBubble({ message, index }) {
         <p
           className="text-sm leading-relaxed"
           style={{
-            color: isSam ? '#F2F0F0' : '#7a6060',
+            color: isSam ? '#1A1A1A' : '#666666',
             fontFamily: 'Manrope, sans-serif',
             fontStyle: 'normal'
           }}
@@ -556,7 +556,7 @@ function MessageBubble({ message, index }) {
           {message.content}
         </p>
         <p className="text-xs mt-1" style={{
-          color: 'var(--color-text-faint)',
+          color: '#999999',
           textAlign: isSam ? 'left' : 'right'
         }}>
           {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -614,7 +614,7 @@ function HeartbeatThinkingDot({ sessionId }) {
     >
       <p
         className="text-xs italic text-center leading-relaxed"
-        style={{ color: 'var(--color-text-faint)', fontFamily: 'Manrope, sans-serif', opacity: 0.6 }}
+        style={{ color: '#999999', fontFamily: 'Manrope, sans-serif', opacity: 0.7 }}
       >
         {latestThought.thought}
       </p>
