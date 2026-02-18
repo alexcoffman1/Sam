@@ -580,3 +580,44 @@ function TypingIndicator() {
     </div>
   );
 }
+
+function HeartbeatThinkingDot({ sessionId }) {
+  const [latestThought, setLatestThought] = React.useState(null);
+  const [visible, setVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+    const poll = async () => {
+      try {
+        const res = await fetch(`${API}/heartbeat-thoughts/${sessionId}?limit=1`);
+        const data = await res.json();
+        if (data[0] && !data[0].surfaced) {
+          setLatestThought(data[0]);
+          setVisible(true);
+          setTimeout(() => setVisible(false), 8000);
+        }
+      } catch {}
+    };
+    // Check once on mount, then every 3 minutes
+    poll();
+    const iv = setInterval(poll, 3 * 60 * 1000);
+    return () => clearInterval(iv);
+  }, [sessionId]);
+
+  if (!visible || !latestThought) return null;
+
+  return (
+    <div
+      data-testid="heartbeat-thinking-dot"
+      className="mt-3 fade-in"
+      style={{ maxWidth: 300, margin: '12px auto 0' }}
+    >
+      <p
+        className="text-xs italic text-center leading-relaxed"
+        style={{ color: 'var(--color-text-faint)', fontFamily: 'Manrope, sans-serif', opacity: 0.6 }}
+      >
+        {latestThought.thought}
+      </p>
+    </div>
+  );
+}
