@@ -558,8 +558,7 @@ function ActionButton({ icon, label, onClick, color, testId, danger, disabled })
   );
 }
 
-function SuperMemorySearch({ sessionId }) {
-  const [query, setQuery] = useState('');
+function SuperMemorySearch({ sessionId }) {  const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
 
