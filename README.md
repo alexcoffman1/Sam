@@ -379,6 +379,9 @@ SUPERMEMORY_API_KEY=sm_...
 - [x] Memory Garden visualization
 - [x] Heartbeat thinking system
 - [x] Sam Compatibility Layer
+- [x] OpenClaw/Moltbot integration
+- [ ] WhatsApp channel setup
+- [ ] Telegram bot integration
 - [ ] Ambient Home Presence (HomeKit)
 - [ ] Mobile companion (iOS/Watch)
 - [ ] Full agentic computer control
