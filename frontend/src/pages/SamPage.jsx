@@ -381,10 +381,10 @@ export default function SamPage({ sessionId }) {
       <div className={`vignette ${isVoiceActive ? 'vignette-active' : ''}`} />
 
       {/* Main layout */}
-      <div className="relative flex-1 flex flex-col items-center overflow-hidden" style={{ zIndex: 10, paddingTop: '64px' }}>
+      <div className="relative flex-1 flex flex-col items-center overflow-hidden" style={{ zIndex: 10, paddingTop: '56px' }}>
 
-        {/* Orb */}
-        <div className="flex flex-col items-center flex-shrink-0 pt-6">
+        {/* Orb section - fixed height */}
+        <div className="flex flex-col items-center flex-shrink-0 pt-4 pb-2" style={{ minHeight: '320px' }}>
           <div
             data-testid="orb-container"
             onClick={handleOrbClick}
@@ -393,9 +393,9 @@ export default function SamPage({ sessionId }) {
             <OrbCanvas state={orbState} emotion={currentEmotion} amplitude={audioAmplitude} />
           </div>
 
-          {/* Status indicator - minimal */}
-          <div className="mt-6 text-center fade-in">
-            <p className="text-xs tracking-widest uppercase" style={{ color: '#999999' }}>
+          {/* Status indicator */}
+          <div className="mt-2 text-center" style={{ background: '#FFFFFF', padding: '4px 12px' }}>
+            <p className="text-xs tracking-widest uppercase" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>
               {orbState === ORB_STATE.IDLE && 'Hold Space · click orb'}
               {orbState === ORB_STATE.LISTENING && 'Listening...'}
               {orbState === ORB_STATE.THINKING && 'Thinking...'}
@@ -408,7 +408,7 @@ export default function SamPage({ sessionId }) {
         <div
           data-testid="messages-container"
           className="flex-1 w-full max-w-2xl px-6 overflow-y-auto"
-          style={{ paddingTop: '20px', paddingBottom: '8px' }}
+          style={{ paddingBottom: '8px' }}
         >
           {messages.length === 0 && !isLoading && (
             <div className="flex flex-col items-center justify-center h-32 opacity-50">
