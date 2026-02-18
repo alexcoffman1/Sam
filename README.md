@@ -98,7 +98,7 @@ cd macos/Sam
 swift build -c release
 
 # Or with Xcode:
-open Sam.xcodeproj
+open Package.swift
 # Build (⌘B) → Run (⌘R)
 ```
 
