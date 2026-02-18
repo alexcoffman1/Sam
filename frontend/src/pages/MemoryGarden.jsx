@@ -376,16 +376,16 @@ export default function MemoryGarden({ sessionId }) {
   }, [summary, sessionId]);
 
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden" style={{ background: 'var(--color-bg)', paddingTop: '64px' }}>
+    <div className="w-full h-full flex flex-col overflow-hidden" style={{ background: '#FFFFFF', paddingTop: '64px' }}>
 
       {/* ── Top bar ── */}
-      <div className="flex-shrink-0 flex items-center justify-between px-6 py-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
+      <div className="flex-shrink-0 flex items-center justify-between px-6 py-3 border-b" style={{ borderColor: 'rgba(0,0,0,0.08)' }}>
         <div className="flex items-center gap-4">
           <div>
-            <h2 className="text-lg font-semibold" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
+            <h2 className="text-lg font-semibold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1A1A1A' }}>
               Memory Garden
             </h2>
-            <p className="text-xs" style={{ color: 'var(--color-text-faint)' }}>
+            <p className="text-xs" style={{ color: '#666666' }}>
               {stats.total} memories · {Object.keys(stats.byCat).length} categories
             </p>
           </div>
@@ -405,19 +405,19 @@ export default function MemoryGarden({ sessionId }) {
         <div className="flex items-center gap-2">
           <button data-testid="summarize-garden-btn" onClick={summarizeGarden} disabled={isSummarizing}
             className="flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all duration-200"
-            style={{ background: 'rgba(255,255,255,0.04)', color: isSummarizing ? '#635858' : '#F2F0F0', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'Manrope, sans-serif' }}>
+            style={{ background: 'rgba(0,0,0,0.04)', color: isSummarizing ? '#CCCCCC' : '#1A1A1A', border: '1px solid rgba(0,0,0,0.08)', fontFamily: 'Manrope, sans-serif' }}>
             <BookOpen size={14} />
             {isSummarizing ? 'Reflecting...' : 'What do you remember?'}
           </button>
           <button data-testid="generate-reflection-btn" onClick={generateInnerLife} disabled={isGenerating}
             className="flex items-center gap-2 px-3 py-2 rounded-full text-sm transition-all duration-200"
-            style={{ background: 'rgba(232,146,124,0.08)', color: isGenerating ? '#635858' : '#E8927C', border: '1px solid rgba(232,146,124,0.15)', fontFamily: 'Manrope, sans-serif' }}>
+            style={{ background: 'rgba(255,107,157,0.1)', color: isGenerating ? '#CCCCCC' : '#FF6B9D', border: '1px solid rgba(255,107,157,0.2)', fontFamily: 'Manrope, sans-serif' }}>
             <Plus size={14} />
             {isGenerating ? '...' : 'Inner Life'}
           </button>
           <button data-testid="refresh-garden-btn" onClick={fetchData} disabled={isLoading}
             className="p-2 rounded-full transition-colors duration-200"
-            style={{ color: isLoading ? '#635858' : '#A49898', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            style={{ color: isLoading ? '#CCCCCC' : '#666666', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.06)' }}>
             <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
           </button>
         </div>
@@ -430,34 +430,34 @@ export default function MemoryGarden({ sessionId }) {
           {isSummarizing ? (
             <div className="flex items-center gap-3">
               <div className="flex gap-1.5"><div className="typing-dot"/><div className="typing-dot"/><div className="typing-dot"/></div>
-              <span className="text-sm" style={{ color: 'var(--color-text-faint)', fontFamily: 'Manrope, sans-serif' }}>Sam is looking through her garden...</span>
+              <span className="text-sm" style={{ color: '#666666', fontFamily: 'Manrope, sans-serif' }}>Sam is looking through her garden...</span>
             </div>
           ) : summary && (<>
             <div className="w-7 h-7 rounded-full flex-shrink-0 mt-0.5"
-              style={{ background: 'radial-gradient(circle, #E8927C, #C8102E)', boxShadow: '0 0 12px rgba(200,16,46,0.35)' }} />
+              style={{ background: 'radial-gradient(circle, #FFB6C1, #FF6B9D)', boxShadow: '0 0 12px rgba(255,107,157,0.4)' }} />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs uppercase tracking-widest" style={{ color: 'var(--color-text-faint)', fontFamily: 'Manrope, sans-serif' }}>
+                <span className="text-xs uppercase tracking-widest" style={{ color: '#666666', fontFamily: 'Manrope, sans-serif' }}>
                   sam · {summary.memory_count} memories
                 </span>
                 {(summary.categories || []).map(c => (
                   <span key={c} className="text-xs px-1.5 py-0.5 rounded-full"
-                    style={{ background: 'rgba(255,255,255,0.05)', color: CATEGORY_META[c]?.color || '#635858', fontFamily: 'Manrope, sans-serif' }}>
+                    style={{ background: 'rgba(0,0,0,0.05)', color: CATEGORY_META[c]?.color || '#666666', fontFamily: 'Manrope, sans-serif' }}>
                     {CATEGORY_META[c]?.symbol} {c}
                   </span>
                 ))}
               </div>
-              <p className="text-sm leading-relaxed" style={{ color: '#F2F0F0', fontFamily: 'Manrope, sans-serif' }}>{summary.summary}</p>
+              <p className="text-sm leading-relaxed" style={{ color: '#1A1A1A', fontFamily: 'Manrope, sans-serif' }}>{summary.summary}</p>
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">
               <button data-testid="play-summary-audio-btn" onClick={playSummaryAudio}
                 className="p-1.5 rounded-full transition-colors duration-200"
-                style={{ color: isPlayingAudio ? '#E8927C' : '#635858' }} title="Hear Sam say this">
+                style={{ color: isPlayingAudio ? '#FF6B9D' : '#999999' }} title="Hear Sam say this">
                 <Volume2 size={14} />
               </button>
               <button data-testid="close-summary-btn"
                 onClick={() => { setSummary(null); audioRef.current?.pause(); audioRef.current = null; setIsPlayingAudio(false); }}
-                className="p-1.5 rounded-full" style={{ color: '#635858' }}>
+                className="p-1.5 rounded-full" style={{ color: '#999999' }}>
                 <X size={14} />
               </button>
             </div>
