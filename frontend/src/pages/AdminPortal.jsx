@@ -450,7 +450,8 @@ export default function AdminPortal({ sessionId }) {
         {/* ── SOUL TAB ── */}
         {activeTab === 'soul' && (
           <div className="space-y-6">
-            {/* Soul description */}
+            {/* Heartbeat thoughts */}
+            <HeartbeatThoughtsPanel sessionId={sessionId} stats={stats} />
             <div className="glass-panel rounded-2xl p-6">
               <h3 className="text-base font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
                 Sam's Soul
