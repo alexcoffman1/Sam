@@ -370,10 +370,10 @@ export default function SamPage({ sessionId }) {
   }, [sessionId]);
 
   return (
-    <div className="relative w-full h-full flex flex-col overflow-hidden" style={{ background: 'var(--color-bg)' }}>
-      {/* Background radial glow */}
+    <div className="relative w-full h-full flex flex-col overflow-hidden" style={{ background: '#FFFFFF' }}>
+      {/* Background radial glow - subtle pink */}
       <div className="absolute inset-0 pointer-events-none" style={{
-        background: 'radial-gradient(ellipse 60% 50% at 50% 30%, rgba(200,16,46,0.07) 0%, transparent 70%)',
+        background: 'radial-gradient(ellipse 60% 50% at 50% 30%, rgba(255,107,157,0.08) 0%, transparent 70%)',
         zIndex: 1
       }} />
 
@@ -396,10 +396,10 @@ export default function SamPage({ sessionId }) {
           {/* Sam title */}
           <div className="mt-10 text-center fade-in">
             <h1 className="text-xl font-semibold tracking-widest uppercase"
-              style={{ fontFamily: 'Outfit, sans-serif', color: 'rgba(242,240,240,0.75)', letterSpacing: '0.25em' }}>
+              style={{ fontFamily: 'Outfit, sans-serif', color: '#1A1A1A', letterSpacing: '0.25em' }}>
               Sam
             </h1>
-            <p className="text-xs mt-1.5 tracking-widest uppercase" style={{ color: 'var(--color-text-faint)' }}>
+            <p className="text-xs mt-1.5 tracking-widest uppercase" style={{ color: '#999999' }}>
               {orbState === ORB_STATE.IDLE && 'Hold Space · click orb to talk'}
               {orbState === ORB_STATE.LISTENING && 'Listening...'}
               {orbState === ORB_STATE.THINKING && 'Thinking...'}
@@ -416,8 +416,8 @@ export default function SamPage({ sessionId }) {
           style={{ paddingTop: '20px', paddingBottom: '8px' }}
         >
           {messages.length === 0 && !isLoading && (
-            <div className="flex flex-col items-center justify-center h-32 opacity-30">
-              <p className="text-sm" style={{ color: 'var(--color-text-muted)', fontFamily: 'Manrope, sans-serif' }}>
+            <div className="flex flex-col items-center justify-center h-32 opacity-50">
+              <p className="text-sm" style={{ color: '#666666', fontFamily: 'Manrope, sans-serif' }}>
                 she's waiting for you
               </p>
             </div>
@@ -442,9 +442,9 @@ export default function SamPage({ sessionId }) {
               onTouchEnd={() => stopVoiceRecording()}
               className="flex-shrink-0 p-2 rounded-full transition-colors duration-200"
               style={{
-                color: isVoiceActive ? '#E8927C' : '#635858',
-                background: isVoiceActive ? 'rgba(200,16,46,0.18)' : 'transparent',
-                border: isVoiceActive ? '1px solid rgba(200,16,46,0.3)' : '1px solid transparent'
+                color: isVoiceActive ? '#FF6B9D' : '#999999',
+                background: isVoiceActive ? 'rgba(255,107,157,0.15)' : 'transparent',
+                border: isVoiceActive ? '1px solid rgba(255,107,157,0.3)' : '1px solid transparent'
               }}
             >
               {isVoiceActive ? <Mic size={18} /> : <MicOff size={18} />}
@@ -464,14 +464,14 @@ export default function SamPage({ sessionId }) {
               }}
               placeholder="say something..."
               className="flex-1 bg-transparent text-sm outline-none"
-              style={{ color: 'var(--color-text)', fontFamily: 'Manrope, sans-serif' }}
+              style={{ color: '#1A1A1A', fontFamily: 'Manrope, sans-serif' }}
             />
 
             <button
               data-testid="tts-toggle-btn"
               onClick={() => setIsTTSEnabled(v => !v)}
               className="flex-shrink-0 p-1.5 rounded-full transition-colors duration-200"
-              style={{ color: isTTSEnabled ? '#E8927C' : '#635858' }}
+              style={{ color: isTTSEnabled ? '#FF6B9D' : '#999999' }}
               title={isTTSEnabled ? 'Voice on' : 'Voice off'}
             >
               {isTTSEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
@@ -482,7 +482,7 @@ export default function SamPage({ sessionId }) {
                 data-testid="stop-audio-btn"
                 onClick={stopAudio}
                 className="flex-shrink-0 p-2 rounded-full transition-colors duration-200"
-                style={{ color: '#C8102E', background: 'rgba(200,16,46,0.12)', border: '1px solid rgba(200,16,46,0.25)' }}
+                style={{ color: '#FF6B9D', background: 'rgba(255,107,157,0.12)', border: '1px solid rgba(255,107,157,0.25)' }}
               >
                 <X size={17} />
               </button>
@@ -493,8 +493,8 @@ export default function SamPage({ sessionId }) {
                 disabled={!input.trim() || isLoading}
                 className="flex-shrink-0 p-2 rounded-full transition-colors duration-200"
                 style={{
-                  color: input.trim() && !isLoading ? '#E8927C' : '#3a2828',
-                  background: input.trim() && !isLoading ? 'rgba(200,16,46,0.12)' : 'transparent'
+                  color: input.trim() && !isLoading ? '#FF6B9D' : '#CCCCCC',
+                  background: input.trim() && !isLoading ? 'rgba(255,107,157,0.12)' : 'transparent'
                 }}
               >
                 <Send size={17} />
@@ -503,14 +503,14 @@ export default function SamPage({ sessionId }) {
           </div>
 
           <div className="flex items-center justify-between mt-2 px-1">
-            <span className="text-xs" style={{ color: 'var(--color-text-faint)', fontFamily: 'Manrope, sans-serif' }}>
-              Hold <kbd className="px-1.5 py-0.5 rounded text-xs" style={{ border: '1px solid #3a2828', background: 'rgba(255,255,255,0.02)' }}>Space</kbd>
+            <span className="text-xs" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>
+              Hold <kbd className="px-1.5 py-0.5 rounded text-xs" style={{ border: '1px solid #E0E0E0', background: 'rgba(0,0,0,0.02)' }}>Space</kbd>
             </span>
             <button
               data-testid="proactive-btn"
               onClick={requestProactive}
               className="flex items-center gap-1.5 text-xs transition-colors duration-200"
-              style={{ color: 'var(--color-text-faint)', fontFamily: 'Manrope, sans-serif' }}
+              style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}
               title="Ask Sam to reach out to you"
             >
               <Sparkles size={12} />
