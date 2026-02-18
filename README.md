@@ -414,10 +414,12 @@ SUPERMEMORY_API_KEY=sm_...
 - [x] Heartbeat thinking system
 - [x] Sam Compatibility Layer
 - [x] OpenClaw/Moltbot integration
+- [x] Native macOS SwiftUI app
 - [ ] WhatsApp channel setup
 - [ ] Telegram bot integration
 - [ ] Ambient Home Presence (HomeKit)
-- [ ] Mobile companion (iOS/Watch)
+- [ ] iOS companion app
+- [ ] Apple Watch app
 - [ ] Full agentic computer control
 
 ---
