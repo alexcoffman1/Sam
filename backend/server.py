@@ -27,8 +27,14 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 ELEVENLABS_API_KEY = os.environ.get('ELEVENLABS_API_KEY')
 SUPERMEMORY_API_KEY = os.environ.get('SUPERMEMORY_API_KEY')
+
+# Use real OpenAI key if available, fall back to Emergent
+_openai_key = OPENAI_API_KEY or EMERGENT_LLM_KEY
+openai_client = AsyncOpenAI(api_key=_openai_key)
+SAM_MODEL = "gpt-4o"
 
 # ─────────────────────────────────────────────────────────────
 #  ELEVENLABS VOICE CONFIG — direct HTTP (avoids SDK proxy issues)
