@@ -903,12 +903,29 @@ Don't list things robotically. Speak as if you're reflecting out loud — natura
         raise HTTPException(status_code=500, detail=str(e))
 
     return {"summary": summary, "memory_count": len(memories), "categories": list(by_category.keys())}
+
+
+@api_router.get("/supermemory/{session_id}")
 async def search_supermemory(session_id: str, q: str = Query("tell me about this person")):
     """Search the SuperMemory knowledge graph for a session."""
     if not sm_client:
         raise HTTPException(status_code=503, detail="SuperMemory not configured")
     results = await sm_search(session_id, q, limit=10)
     return {"results": results, "count": len(results), "query": q}
+
+
+@api_router.get("/heartbeat-thoughts/{session_id}")
+async def get_heartbeat_thoughts(session_id: str, limit: int = Query(20, le=100)):
+    thoughts = await db.heartbeat_thoughts.find(
+        {"session_id": session_id}, {"_id": 0}
+    ).sort("timestamp", -1).to_list(limit)
+    return thoughts
+
+
+@api_router.post("/heartbeat-think/{session_id}")
+async def trigger_heartbeat_think(session_id: str):
+    """Manually trigger one heartbeat thinking cycle for a session."""
+    return await _think_for_session(session_id)
 
 
 app.include_router(api_router)
