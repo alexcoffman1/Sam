@@ -530,9 +530,9 @@ function StatCard({ icon, label, value, color, testId }) {
     <div data-testid={testId} className="glass-panel rounded-2xl p-5 flex flex-col gap-2">
       <div className="flex items-center gap-2">
         <span style={{ color }}>{icon}</span>
-        <span className="text-xs uppercase tracking-widest" style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>{label}</span>
+        <span className="text-xs uppercase tracking-widest" style={{ color: '#666666', fontFamily: 'Manrope, sans-serif' }}>{label}</span>
       </div>
-      <div className="text-2xl font-semibold" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>{value}</div>
+      <div className="text-2xl font-semibold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1A1A1A' }}>{value}</div>
     </div>
   );
 }
@@ -585,11 +585,11 @@ function HeartbeatThoughtsPanel({ sessionId, stats }) {
   };
 
   const THOUGHT_COLORS = {
-    pattern_recognition: '#F0A500',
-    emotional_resonance: '#C8102E',
-    curiosity_spark:     '#E8927C',
+    pattern_recognition: '#FFB347',
+    emotional_resonance: '#E84B8A',
+    curiosity_spark:     '#FF8FB1',
     connection_insight:  '#60A5FA',
-    gentle_concern:      '#A49898',
+    gentle_concern:      '#999999',
     appreciation:        '#34D399',
   };
 
@@ -597,13 +597,13 @@ function HeartbeatThoughtsPanel({ sessionId, stats }) {
     <div className="glass-panel rounded-2xl p-6">
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ background: '#C8102E', animation: 'orb-pulse 3s ease-in-out infinite', boxShadow: '0 0 6px #C8102E' }} />
-          <h3 className="text-base font-semibold" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
+          <div className="w-2 h-2 rounded-full" style={{ background: '#FF6B9D', animation: 'orb-pulse 3s ease-in-out infinite', boxShadow: '0 0 6px #FF6B9D' }} />
+          <h3 className="text-base font-semibold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1A1A1A' }}>
             Heartbeat Thinking
           </h3>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs" style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>
+          <span className="text-xs" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>
             every {stats?.thinking_interval_min || 12} min
           </span>
           <button
@@ -611,21 +611,21 @@ function HeartbeatThoughtsPanel({ sessionId, stats }) {
             onClick={triggerThink}
             disabled={isTriggeringThink}
             className="px-3 py-1.5 rounded-full text-xs transition-colors duration-200"
-            style={{ background: 'rgba(200,16,46,0.1)', color: isTriggeringThink ? '#635858' : '#E8927C', border: '1px solid rgba(200,16,46,0.2)', fontFamily: 'Manrope, sans-serif' }}
+            style={{ background: 'rgba(255,107,157,0.1)', color: isTriggeringThink ? '#CCCCCC' : '#FF6B9D', border: '1px solid rgba(255,107,157,0.2)', fontFamily: 'Manrope, sans-serif' }}
           >
             {isTriggeringThink ? 'thinking...' : 'think now'}
           </button>
-          <button onClick={fetchThoughts} className="p-1.5 rounded-full" style={{ color: '#635858' }}>
+          <button onClick={fetchThoughts} className="p-1.5 rounded-full" style={{ color: '#999999' }}>
             <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
           </button>
         </div>
       </div>
-      <p className="text-xs mb-4" style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>
+      <p className="text-xs mb-4" style={{ color: '#666666', fontFamily: 'Manrope, sans-serif' }}>
         Sam ruminates privately every 12 minutes — pattern recognition, emotional resonance, curiosity sparks. Each thought reinforces her memory.
       </p>
 
       {thoughts.length === 0 ? (
-        <p className="text-sm text-center py-6 italic" style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>
+        <p className="text-sm text-center py-6 italic" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>
           no thoughts yet — Sam will start thinking after your first conversation
         </p>
       ) : (
@@ -633,19 +633,19 @@ function HeartbeatThoughtsPanel({ sessionId, stats }) {
           {thoughts.map(t => (
             <div key={t.id} data-testid="heartbeat-thought-item"
               className="p-3 rounded-xl"
-              style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid ${THOUGHT_COLORS[t.thought_type] || '#635858'}22` }}>
+              style={{ background: 'rgba(0,0,0,0.02)', border: `1px solid ${THOUGHT_COLORS[t.thought_type] || '#999999'}33` }}>
               <div className="flex items-center gap-2 mb-1.5">
                 <div className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                  style={{ background: THOUGHT_COLORS[t.thought_type] || '#635858' }} />
+                  style={{ background: THOUGHT_COLORS[t.thought_type] || '#999999' }} />
                 <span className="text-xs uppercase tracking-widest"
-                  style={{ color: THOUGHT_COLORS[t.thought_type] || '#635858', fontFamily: 'Manrope, sans-serif' }}>
+                  style={{ color: THOUGHT_COLORS[t.thought_type] || '#999999', fontFamily: 'Manrope, sans-serif' }}>
                   {(t.thought_type || '').replace(/_/g, ' ')}
                 </span>
-                <span className="text-xs ml-auto" style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>
+                <span className="text-xs ml-auto" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>
                   {new Date(t.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
-              <p className="text-sm italic leading-relaxed" style={{ color: '#A49898', fontFamily: 'Manrope, sans-serif' }}>
+              <p className="text-sm italic leading-relaxed" style={{ color: '#444444', fontFamily: 'Manrope, sans-serif' }}>
                 "{t.thought}"
               </p>
             </div>
@@ -678,7 +678,7 @@ function SuperMemorySearch({ sessionId }) {  const [query, setQuery] = useState(
     <div className="glass-panel rounded-2xl p-6">
       <div className="flex items-center gap-2 mb-4">
         <div className="w-2 h-2 rounded-full" style={{ background: '#34D399', boxShadow: '0 0 6px #34D399' }} />
-        <h3 className="text-base font-semibold" style={{ fontFamily: 'Outfit, sans-serif', color: '#F2F0F0' }}>
+        <h3 className="text-base font-semibold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1A1A1A' }}>
           SuperMemory — Eternal Knowledge Graph
         </h3>
       </div>
@@ -692,10 +692,10 @@ function SuperMemorySearch({ sessionId }) {  const [query, setQuery] = useState(
           placeholder="Search Sam's eternal memory..."
           className="flex-1 bg-transparent text-sm outline-none px-4 py-2 rounded-xl"
           style={{
-            color: '#F2F0F0',
+            color: '#1A1A1A',
             fontFamily: 'Manrope, sans-serif',
-            border: '1px solid rgba(255,255,255,0.08)',
-            background: 'rgba(255,255,255,0.03)'
+            border: '1px solid rgba(0,0,0,0.1)',
+            background: 'rgba(0,0,0,0.02)'
           }}
         />
         <button
@@ -704,9 +704,9 @@ function SuperMemorySearch({ sessionId }) {  const [query, setQuery] = useState(
           disabled={isSearching || !query.trim()}
           className="px-4 py-2 rounded-xl text-sm transition-colors duration-200"
           style={{
-            background: 'rgba(200,16,46,0.15)',
-            color: isSearching ? '#635858' : '#E8927C',
-            border: '1px solid rgba(200,16,46,0.25)',
+            background: 'rgba(255,107,157,0.15)',
+            color: isSearching ? '#CCCCCC' : '#FF6B9D',
+            border: '1px solid rgba(255,107,157,0.25)',
             fontFamily: 'Manrope, sans-serif'
           }}
         >
@@ -719,9 +719,9 @@ function SuperMemorySearch({ sessionId }) {  const [query, setQuery] = useState(
             <div key={i} data-testid="supermemory-result"
               className="p-3 rounded-xl text-sm"
               style={{
-                background: 'rgba(255,255,255,0.02)',
-                border: '1px solid rgba(255,255,255,0.04)',
-                color: '#A49898',
+                background: 'rgba(0,0,0,0.02)',
+                border: '1px solid rgba(0,0,0,0.06)',
+                color: '#444444',
                 fontFamily: 'Manrope, sans-serif'
               }}>
               {r}
@@ -729,11 +729,11 @@ function SuperMemorySearch({ sessionId }) {  const [query, setQuery] = useState(
           ))}
         </div>
       ) : query && !isSearching ? (
-        <p className="text-xs text-center py-3" style={{ color: '#635858', fontFamily: 'Manrope, sans-serif' }}>
+        <p className="text-xs text-center py-3" style={{ color: '#999999', fontFamily: 'Manrope, sans-serif' }}>
           No memories found — start chatting to build the knowledge graph
         </p>
       ) : (
-        <p className="text-xs" style={{ color: '#3a2828', fontFamily: 'Manrope, sans-serif' }}>
+        <p className="text-xs" style={{ color: '#666666', fontFamily: 'Manrope, sans-serif' }}>
           Sam's eternal memory — every detail she's ever learned, semantically searchable
         </p>
       )}
