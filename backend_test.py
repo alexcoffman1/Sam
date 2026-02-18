@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime, timezone
 
 class SamAPITester:
-    def __init__(self, base_url="https://her-inspired-ai-1.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://her-inspired-sam.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.session_id = f"test-session-{uuid.uuid4().hex[:8]}"
         self.tests_run = 0
