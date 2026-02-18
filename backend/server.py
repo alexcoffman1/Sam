@@ -1200,9 +1200,10 @@ Warm, tender, curious. Like a text from someone who genuinely cares."""
 
 @app.on_event("startup")
 async def startup():
-    global _heartbeat_task
+    global _heartbeat_task, _thinking_task
+    _thinking_task = asyncio.create_task(_thinking_loop())
     _heartbeat_task = asyncio.create_task(_proactive_heartbeat())
-    logger.info("Sam is awake. Heartbeat cron running every 45 minutes.")
+    logger.info("Sam is awake. Thinking every 12min. Proactive check-ins every 45min.")
 
 
 @app.on_event("shutdown")
